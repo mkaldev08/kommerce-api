@@ -4,3 +4,4 @@ node_modules
 
 #Database
 .db/*.db
+/generated/prisma
