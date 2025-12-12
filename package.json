@@ -1,0 +1,40 @@
+{
+  "name": "kommerce-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "pnpm services:up && tsx watch --env-file=.env src/server.ts",
+    "start": "node build/server.js",
+    "build": "tsup ./src -d build --format esm cjs --minify --external @prisma/client",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "services:up": "docker compose up -d",
+    "services:stop": "docker compose stop",
+    "services:down": "docker compose down"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "7.1.0",
+    "@prisma/client": "7.1.0",
+    "bcryptjs": "3.0.3",
+    "dotenv": "17.2.3",
+    "fastify": "5.6.2",
+    "uuidv7": "1.1.0",
+    "zod": "4.1.13"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.3.8",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "25.0.1",
+    "prisma": "7.1.0",
+    "tsup": "8.5.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "4.0.15"
+  }
+}
