@@ -9,5 +9,8 @@
     "source.organizeImports.biome": true,
     "source.removeUnusedImports": true,
     "prisma.pinToPrisma6": true,
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }
