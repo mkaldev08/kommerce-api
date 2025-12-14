@@ -1,11 +1,10 @@
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -70,3 +69,4 @@ model RolePermission {
   @@unique([role_id, permission_id])
   @@map("role_permissions")
 }
+
