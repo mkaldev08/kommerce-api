@@ -1,11 +1,11 @@
-import z, { string } from 'zod'
+import { z } from 'zod'
 
 const envSchema = z.object({
-  DATABASE_URL: string(),
+  DATABASE_URL: z.string(),
   NODE_ENV: z.enum(['dev', 'production', 'test']).default('dev'),
-  POSTGRES_USER: string().optional(),
-  POSTGRES_PASSWORD: string().optional(),
-  POSTGRES_DATABASE: string().optional(),
+  POSTGRES_USER: z.string().optional(),
+  POSTGRES_PASSWORD: z.string().optional(),
+  POSTGRES_DATABASE: z.string().optional(),
   PORT: z.coerce.number().default(3333),
 })
 

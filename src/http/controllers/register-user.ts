@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import z from 'zod'
 import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error'
-import { MakeRegisterUser } from '@/use-cases/factory/make-register-user'
+import { MakeRegisterUserUseCase } from '@/use-cases/factory/make-register-user-use-case'
 import { strongPasswordRegex } from '@/utils/regex-formats'
 
 export async function registerUser(
@@ -22,7 +22,7 @@ export async function registerUser(
     registerBodySchema.parse(request.body)
 
   try {
-    const registerUseCase = MakeRegisterUser()
+    const registerUseCase = MakeRegisterUserUseCase()
 
     await registerUseCase.execute({
       email,
