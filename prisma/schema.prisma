@@ -18,9 +18,27 @@ model User {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  roles UserRole[]
+  roles     UserRole[]
+  companies Company[]
+  orders    Order[]
 
   @@map("users")
+}
+
+model employee {
+  id           String   @id @default(uuid())
+  first_name   String
+  last_name    String
+  email        String   @unique
+  phone_number String   @unique
+  hire_date    DateTime
+  job_title    String
+  salary       Float
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@unique([first_name, last_name])
+  @@map("employees")
 }
 
 model Role {
@@ -47,14 +65,14 @@ model Permission {
 }
 
 model UserRole {
-  id      String @id @default(uuid())
-  user_id String
-  role_id String
+  id            String @id @default(uuid())
+  user_owner_id String
+  role_id       String
 
-  user User @relation(fields: [user_id], references: [id])
+  user User @relation(fields: [user_owner_id], references: [id])
   role Role @relation(fields: [role_id], references: [id])
 
-  @@unique([user_id, role_id])
+  @@unique([user_owner_id, role_id])
   @@map("user_roles")
 }
 
@@ -70,3 +88,168 @@ model RolePermission {
   @@map("role_permissions")
 }
 
+model Address {
+  id         String     @id @default(uuid())
+  street     String
+  city       String
+  state      String
+  zip_code   String?
+  country    String
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  companies  Company[]
+  costumers  Costumer[]
+  suppliers  Supplier[]
+
+  @@map("addresses")
+}
+
+model Contacts {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  phone_number String    @unique
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  companies    Company[]
+  supplier     Supplier?
+
+  @@map("contacts")
+}
+
+model Company {
+  id                  String   @id @default(uuid())
+  name                String   @unique
+  address             Address  @relation(fields: [address_id], references: [id])
+  address_id          String
+  created_at          DateTime @default(now())
+  nif                 String   @unique
+  social_reason       String
+  registration_number String   @unique
+  email               String   @unique
+  website             String?
+  updated_at          DateTime @updatedAt
+  regime              Regime   @default(SIMPLIFICADO)
+  user_owner_id       String
+  userOwner           User     @relation(fields: [user_owner_id], references: [id])
+
+  document_code String @unique
+
+  social_capital Float    @default(0)
+  contacts       Contacts @relation(fields: [contacts_id], references: [id])
+  contacts_id    String
+
+  @@map("companies")
+}
+
+enum Regime {
+  SIMPLIFICADO
+  EXCLUSAO
+  GERAL
+}
+
+model Product {
+  id            String          @id @default(uuid())
+  name          String
+  description   String?
+  price         Float
+  category_id   String
+  category      ProductCategory @relation(fields: [category_id], references: [id])
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  stocks        Stock[]
+  productOrders ProductOrder[]
+
+  @@map("products")
+}
+
+model Stock {
+  id         String   @id @default(uuid())
+  product_id String
+  quantity   Int
+  location   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  supplier Supplier? @relation(fields: [supplier_id], references: [id])
+
+  product     Product @relation(fields: [product_id], references: [id])
+  supplier_id String?
+
+  @@unique([product_id, location])
+  @@map("stocks")
+}
+
+model ProductCategory {
+  id         String    @id @default(uuid())
+  name       String    @unique
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  products   Product[]
+
+  @@map("product_categories")
+}
+
+model Costumer {
+  id            String       @id @default(uuid())
+  first_name    String?
+  last_name     String?      @default("Consumidor Final")
+  nif           String       @unique
+  costumer_type CostumerType
+  email         String       @unique
+  phone_number  String       @unique
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  address_id    String
+  address       Address      @relation(fields: [address_id], references: [id])
+
+  @@unique([first_name, last_name])
+  @@map("costumers")
+}
+
+enum CostumerType {
+  INDIVIDUAL
+  COMPANY
+}
+
+model ProductOrder {
+  id         String   @id @default(uuid())
+  order_id   String
+  product_id String
+  quantity   Int
+  unit_price Float
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  order   Order   @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@unique([order_id, product_id])
+  @@map("product_orders")
+}
+
+model Order {
+  id            String         @id @default(uuid())
+  order_date    DateTime       @default(now())
+  customer_id   String
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  customer      User           @relation(fields: [customer_id], references: [id])
+  productOrders ProductOrder[]
+
+  @@map("orders")
+}
+
+model Supplier {
+  id         String   @id @default(uuid())
+  name       String
+  nif        String   @unique
+  address_id String
+  address    Address  @relation(fields: [address_id], references: [id])
+  contact_id String   @unique
+  contact    Contacts @relation(fields: [contact_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  stocks     Stock[]
+
+  @@map("suppliers")
+}

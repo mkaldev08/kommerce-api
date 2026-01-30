@@ -8,5 +8,8 @@
   "editor.codeActionsOnSave": {
     "source.organizeImports.biome": "explicit",
     "source.removeUnusedImports": "explicit",
+  },
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
   }
 }
