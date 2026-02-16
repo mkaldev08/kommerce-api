@@ -1,12 +1,12 @@
 ### Autenticação / Autorização
 
-* [ ] Implementar registro de usuário (email, senha, nome, telefone opcional).
-* [ ] Implementar login com JWT (access token + refresh token).
-* [ ] Implementar renovação de refresh token.
-* [ ] Implementar recuperação de senha por email (token único, expiração configurável).
-* [ ] Implementar verificação de email (token de confirmação).
-* [ ] Implementar RBAC (roles configuráveis: owner, admin, manager, cashier, instructor, accountant).
-* [ ] Endpoints para gestão de roles e permissões (CRUD).
+[x] Implementar registro de usuário (email, senha, nome, telefone opcional).
+[ ] Implementar login com JWT (access token + refresh token).
+[ ] Implementar renovação de refresh token.
+[ ] Implementar recuperação de senha por email (token único, expiração configurável).
+[ ] Implementar verificação de email (token de confirmação).
+[ ] Implementar RBAC (roles configuráveis: owner, admin, manager, cashier, instructor, accountant).
+[ ] Endpoints para gestão de roles e permissões (CRUD).
 
 ### Multi-entidade / Organização
 
@@ -116,7 +116,7 @@
 
 ### Autenticação / Autorização
 
-* [ ] Senhas armazenadas com hashing forte (bcrypt/argon2) + salt.
+* [x] Senhas armazenadas com hashing forte (bcrypt/argon2) + salt.
 * [ ] Access token expira (curto prazo), refresh token expira (mais longo); revogação imediata ao logout.
 * [ ] Usuário sem verificação de email não pode criar estabelecimentos nem emitir faturas.
 * [ ] Roles definem permissões por recurso; permission-check obrigatório em todos endpoints sensíveis.

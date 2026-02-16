@@ -18,7 +18,6 @@ model User {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  roles     UserRole[]
   companies Company[]
   orders    Order[]
 
@@ -47,80 +46,37 @@ model Role {
   description String?
   created_at  DateTime @default(now())
 
-  users       UserRole[]
-  permissions RolePermission[]
-
   @@map("roles")
 }
 
-model Permission {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  created_at  DateTime @default(now())
+model Municipality {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
-  roles RolePermission[]
+  province_id String
+  province    Province   @relation(fields: [province_id], references: [id])
+  companies   Company[]
+  suppliers   Supplier[]
+  costumers   Costumer[]
 
-  @@map("permissions")
+  @@map("municipalities")
 }
 
-model UserRole {
-  id            String @id @default(uuid())
-  user_owner_id String
-  role_id       String
+model Province {
+  id             String         @id @default(uuid())
+  name           String         @unique
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+  municipalities Municipality[]
 
-  user User @relation(fields: [user_owner_id], references: [id])
-  role Role @relation(fields: [role_id], references: [id])
-
-  @@unique([user_owner_id, role_id])
-  @@map("user_roles")
-}
-
-model RolePermission {
-  id            String @id @default(uuid())
-  role_id       String
-  permission_id String
-
-  role       Role       @relation(fields: [role_id], references: [id])
-  permission Permission @relation(fields: [permission_id], references: [id])
-
-  @@unique([role_id, permission_id])
-  @@map("role_permissions")
-}
-
-model Address {
-  id         String     @id @default(uuid())
-  street     String
-  city       String
-  state      String
-  zip_code   String?
-  country    String
-  created_at DateTime   @default(now())
-  updated_at DateTime   @updatedAt
-  companies  Company[]
-  costumers  Costumer[]
-  suppliers  Supplier[]
-
-  @@map("addresses")
-}
-
-model Contacts {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  phone_number String    @unique
-  created_at   DateTime  @default(now())
-  updated_at   DateTime  @updatedAt
-  companies    Company[]
-  supplier     Supplier?
-
-  @@map("contacts")
+  @@map("provinces")
 }
 
 model Company {
   id                  String   @id @default(uuid())
   name                String   @unique
-  address             Address  @relation(fields: [address_id], references: [id])
-  address_id          String
   created_at          DateTime @default(now())
   nif                 String   @unique
   social_reason       String
@@ -134,9 +90,14 @@ model Company {
 
   document_code String @unique
 
-  social_capital Float    @default(0)
-  contacts       Contacts @relation(fields: [contacts_id], references: [id])
-  contacts_id    String
+  social_capital Float @default(0)
+
+  street          String
+  zip_code        String?
+  municipality_id String
+  municipality    Municipality @relation(fields: [municipality_id], references: [id])
+
+  phone_number String @unique
 
   @@map("companies")
 }
@@ -195,12 +156,15 @@ model Costumer {
   last_name     String?      @default("Consumidor Final")
   nif           String       @unique
   costumer_type CostumerType
-  email         String       @unique
-  phone_number  String       @unique
+  email         String?      @unique
+  phone_number  String?      @unique
   created_at    DateTime     @default(now())
   updated_at    DateTime     @updatedAt
-  address_id    String
-  address       Address      @relation(fields: [address_id], references: [id])
+
+  street          String?
+  zip_code        String?
+  municipality_id String
+  municipality    Municipality @relation(fields: [municipality_id], references: [id])
 
   @@unique([first_name, last_name])
   @@map("costumers")
@@ -240,16 +204,18 @@ model Order {
 }
 
 model Supplier {
-  id         String   @id @default(uuid())
-  name       String
-  nif        String   @unique
-  address_id String
-  address    Address  @relation(fields: [address_id], references: [id])
-  contact_id String   @unique
-  contact    Contacts @relation(fields: [contact_id], references: [id])
+  id   String @id @default(uuid())
+  name String
+  nif  String @unique
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   stocks     Stock[]
+
+  street          String
+  zip_code        String?
+  municipality_id String
+  municipality    Municipality @relation(fields: [municipality_id], references: [id])
 
   @@map("suppliers")
 }

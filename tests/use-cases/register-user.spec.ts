@@ -2,7 +2,7 @@ import { compare } from 'bcryptjs'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
 import { UserAlreadyExistsError } from '@/use-cases/errors/user-already-exists-error'
-import { RegisterUseCase } from '@/use-cases/register-user'
+import { RegisterUseCase } from '@/use-cases/register-user-use-case'
 
 let usersRepository: InMemoryUsersRepository
 let sut: RegisterUseCase
@@ -33,7 +33,10 @@ describe('Register Use Case', () => {
       username: 'johndoe',
     })
 
-    const isCorrectlyPasswordHashed = await compare('123456', user.password_hash)
+    const isCorrectlyPasswordHashed = await compare(
+      '123456',
+      user.password_hash,
+    )
 
     expect(isCorrectlyPasswordHashed).toBe(true)
   })
