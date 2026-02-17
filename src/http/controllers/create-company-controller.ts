@@ -26,7 +26,11 @@ export async function CreateCompany(
     zip_code: z.string().optional(),
   })
 
-  const { user_owner_id } = createCompanyBodySchema.parse(request.params)
+  const createCompanyParamsSchema = z.object({
+    ownerId: z.uuid(),
+  })
+
+  const { ownerId } = createCompanyParamsSchema.parse(request.params)
   const companyData = createCompanyBodySchema.parse(request.body)
 
   try {
@@ -34,7 +38,7 @@ export async function CreateCompany(
 
     await createCompanyUseCase.execute({
       ...companyData,
-      user_owner_id,
+      user_owner_id: ownerId,
     })
   } catch (err) {
     if (err instanceof CompanyAlreadyExistsError) {

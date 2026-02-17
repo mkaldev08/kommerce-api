@@ -7,7 +7,7 @@ import { ResourceNotFoundError } from './errors/resource-not-found-error'
 export enum Regime {
   SIMPLIFICADO = 'SIMPLIFICADO',
   EXCLUSAO = 'EXCLUSAO',
-  GERA = 'GERAL',
+  GERAL = 'GERAL',
 }
 
 interface CreateCompanyUseCaseParams {
