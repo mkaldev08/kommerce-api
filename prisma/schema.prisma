@@ -99,13 +99,37 @@ model Company {
 
   phone_number String @unique
 
+  businessUnits BusinessUnit[]
+
   @@map("companies")
+}
+
+model BusinessUnit {
+  id          String           @id @default(uuid())
+  name        String
+  type        BusinessUnitType
+  description String
+  address     String
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+
+  company_id String
+  company    Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  @@unique([company_id, name])
+  @@map("business_units")
 }
 
 enum Regime {
   SIMPLIFICADO
   EXCLUSAO
   GERAL
+}
+
+enum BusinessUnitType {
+  LOJA
+  ACADEMIA
+  CASA_DE_JOGOS
 }
 
 model Product {

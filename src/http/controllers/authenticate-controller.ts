@@ -29,6 +29,13 @@ export async function authenticateUser(
       },
     )
 
+    reply.setCookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure: true in production
+      sameSite: true,
+      path: '/',
+    })
+
     return reply.status(200).send({
       user: {
         id: user.id,

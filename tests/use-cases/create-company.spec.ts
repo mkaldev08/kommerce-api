@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { InMemoryBusinessUnitRepository } from '@/repositories/in-memory/in-memory-business-unit-repository'
 import { InMemoryCompaniesRepository } from '@/repositories/in-memory/in-memory-companies-repository'
 import { InMemoryUsersRepository } from '@/repositories/in-memory/in-memory-users-repository'
 import { CreateCompanyUseCase } from '@/use-cases/create-company-use-case'
@@ -7,13 +8,19 @@ import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-err
 
 let usersRepository: InMemoryUsersRepository
 let companiesRepository: InMemoryCompaniesRepository
+let businessUnitRepository: InMemoryBusinessUnitRepository
 let sut: CreateCompanyUseCase
 
 describe('Create Company Use Case', () => {
   beforeEach(async () => {
     usersRepository = new InMemoryUsersRepository()
     companiesRepository = new InMemoryCompaniesRepository()
-    sut = new CreateCompanyUseCase(usersRepository, companiesRepository)
+    businessUnitRepository = new InMemoryBusinessUnitRepository()
+    sut = new CreateCompanyUseCase(
+      usersRepository,
+      companiesRepository,
+      businessUnitRepository,
+    )
 
     await usersRepository.create({
       id: 'user-id',
@@ -40,6 +47,30 @@ describe('Create Company Use Case', () => {
     })
 
     expect(company.id).toEqual(expect.any(String))
+  })
+
+  it('should create default business units for a new company', async () => {
+    const { company } = await sut.execute({
+      name: 'Company Name',
+      nif: '123456789',
+      social_reason: 'Social Reason',
+      registration_number: '123456789',
+      document_code: '123456789',
+      user_owner_id: 'user-id',
+      email: 'company@example.com',
+      phone_number: '123456789',
+      street: 'Street Name',
+      municipality_id: 'municipality-id',
+    })
+
+    const businessUnits = await businessUnitRepository.findByCompanyId(
+      company.id,
+    )
+
+    expect(businessUnits).toHaveLength(3)
+    expect(businessUnits.map((unit) => unit.type)).toEqual(
+      expect.arrayContaining(['LOJA', 'ACADEMIA', 'CASA_DE_JOGOS']),
+    )
   })
 
   it('should not be able to create a company with a non existing user', async () => {

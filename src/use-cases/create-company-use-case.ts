@@ -1,4 +1,5 @@
-import type { Company } from 'generated/prisma/client'
+import type { BusinessUnitType, Company } from 'generated/prisma/client'
+import type { BusinessUnitRepository } from '@/repositories/business-unit-repository'
 import type { CompaniesRepository } from '@/repositories/companies-repository'
 import type { UsersRepository } from '@/repositories/users-repository'
 import { CompanyAlreadyExistsError } from './errors/company-already-exists-error'
@@ -38,6 +39,7 @@ export class CreateCompanyUseCase {
   constructor(
     private usersRepository: UsersRepository,
     private companiesRepository: CompaniesRepository,
+    private businessUnitRepository: BusinessUnitRepository,
   ) {}
 
   async execute(
@@ -72,6 +74,40 @@ export class CreateCompanyUseCase {
       regime: params.regime ?? Regime.SIMPLIFICADO,
       user_owner_id: user.id,
     })
+
+    const defaultBusinessUnits: Array<{
+      name: string
+      type: BusinessUnitType
+      description: string
+    }> = [
+      {
+        name: 'Loja',
+        type: 'LOJA',
+        description: 'Gestao de inventario e vendas',
+      },
+      {
+        name: 'Academia',
+        type: 'ACADEMIA',
+        description: 'Gestao de membros e aulas',
+      },
+      {
+        name: 'Casa de Jogos',
+        type: 'CASA_DE_JOGOS',
+        description: 'Gestao de uso e venda de jogos',
+      },
+    ]
+
+    await Promise.all(
+      defaultBusinessUnits.map((unit) =>
+        this.businessUnitRepository.create({
+          name: unit.name,
+          type: unit.type,
+          description: unit.description,
+          address: params.street,
+          company_id: company.id,
+        }),
+      ),
+    )
 
     return {
       company,
