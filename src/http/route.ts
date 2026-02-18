@@ -5,6 +5,7 @@ import { FindCompaniesByOwnerId } from './controllers/find-companies-by-owner-id
 import { FindCompanyById } from './controllers/find-company-by-id-controller'
 import { FindOneCompanyByOwnerId } from './controllers/find-one-company-by-owner-id-controller'
 import { GetAllProvinces } from './controllers/get-all-provinces-controller'
+import { GetBusinessUnitByIdController } from './controllers/get-business-unit-by-id-controller'
 import { GetBusinessUnitsByCompanyIdController } from './controllers/get-business-units-by-company-id-controller'
 import { GetMunicipalitiesByProvinceId } from './controllers/get-municipalities-by-province-id-controller'
 import { logoutUser } from './controllers/logout-controller'
@@ -22,6 +23,8 @@ export function appRoutes(app: FastifyInstance) {
     '/business-units/company/:companyId',
     GetBusinessUnitsByCompanyIdController,
   )
+
+  app.get('/business-units/:businessUnitId', GetBusinessUnitByIdController)
 
   app.get('/provinces', GetAllProvinces)
   app.get(

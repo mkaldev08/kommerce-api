@@ -1,245 +1,568 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
 }
 
-model User {
-  id            String   @id @default(uuid())
-  username      String   @unique
-  name          String
-  email         String   @unique
-  phone_number  String   @unique
-  password_hash String
-  is_active     Boolean  @default(true)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
+enum VATRegime {
+  SIMPLIFIED // Regime simplificado de IVA
+  EXEMPTION // Regime de exclusão / isenção de IVA
+  GENERAL // Regime geral de IVA
+}
+
+enum BusinessUnitType {
+  STORE // Loja comercial
+  GAMING_HOUSE // Casa de jogos
+  ACADEMY // Academia desportiva
+}
+
+enum InvoiceType {
+  INVOICE // Fatura
+  INVOICE_RECEIPT // Fatura-recibo
+  CREDIT_NOTE // Nota de crédito
+  DEBIT_NOTE // Nota de débito
+}
+
+enum VATStatus {
+  TAXED // Sujeito a IVA
+  EXEMPT // Isento de IVA
+  NOT_SUBJECT // Não sujeito a IVA
+}
+
+enum CashRegisterStatus {
+  OPEN // Caixa aberto
+  CLOSED // Caixa fechado
+  SUSPENDED // Caixa suspenso
+}
+
+enum WorkShiftStatus {
+  OPEN // Turno aberto
+  CLOSED // Turno fechado
+  SUSPENDED // Turno suspenso
+}
+
+enum PaymentMethod {
+  CASH // Dinheiro
+  CARD // Cartão bancário
+  EXPRESS // Pagamento expresso
+  BANK_TRANSFER // Transferência bancária
+}
+
+enum CashMovementType {
+  ENTRY // Entrada de valores
+  EXIT // Saída de valores
+}
+
+enum PaymentType {
+  TUITION_FEE // Mensalidade
+  ENROLLMENT_FEE // Taxa de matrícula
+  CONFIRMATION_FEE // Taxa de confirmação
+}
+
+enum FinancialPlanStatus {
+  PENDING // Pendente
+  PAID // Pago
+  OVERDUE // Em atraso
+}
+
+model Province {
+  id   String @id @default(uuid())
+  name String @unique
+
+  municipalities Municipality[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model Municipality {
+  id          String   @id @default(uuid())
+  name        String
+  province_id String
+  province    Province @relation(fields: [province_id], references: [id])
 
   companies Company[]
-  orders    Order[]
+  customers Customer[]
+  suppliers Supplier[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([name, province_id])
+  @@index([province_id])
+}
+
+model User {
+  id            String  @id @default(uuid())
+  username      String  @unique
+  first_name    String
+  last_name     String?
+  email         String  @unique
+  phone_number  String  @unique
+  password_hash String
+  is_active     Boolean @default(true)
+
+  owned_companies    Company[]
+  operated_registers CashRegister[]
+  work_shifts        WorkShift[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("users")
 }
 
-model employee {
-  id           String   @id @default(uuid())
-  first_name   String
-  last_name    String
-  email        String   @unique
-  phone_number String   @unique
-  hire_date    DateTime
-  job_title    String
-  salary       Float
-  created_at   DateTime @default(now())
-  updated_at   DateTime @updatedAt
-
-  @@unique([first_name, last_name])
-  @@map("employees")
-}
-
-model Role {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  description String?
-  created_at  DateTime @default(now())
-
-  @@map("roles")
-}
-
-model Municipality {
-  id         String   @id @default(uuid())
-  name       String   @unique
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  province_id String
-  province    Province   @relation(fields: [province_id], references: [id])
-  companies   Company[]
-  suppliers   Supplier[]
-  costumers   Costumer[]
-
-  @@map("municipalities")
-}
-
-model Province {
-  id             String         @id @default(uuid())
-  name           String         @unique
-  created_at     DateTime       @default(now())
-  updated_at     DateTime       @updatedAt
-  municipalities Municipality[]
-
-  @@map("provinces")
-}
-
 model Company {
-  id                  String   @id @default(uuid())
-  name                String   @unique
-  created_at          DateTime @default(now())
-  nif                 String   @unique
-  social_reason       String
-  registration_number String   @unique
-  email               String   @unique
-  website             String?
-  updated_at          DateTime @updatedAt
-  regime              Regime   @default(SIMPLIFICADO)
-  user_owner_id       String
-  userOwner           User     @relation(fields: [user_owner_id], references: [id])
+  id                  String    @id @default(uuid())
+  legal_name          String
+  trade_name          String
+  commercial_registry String    @unique
+  email               String
+  phone_number        String
+  vat_regime          VATRegime
 
-  document_code String @unique
+  share_capital Decimal
 
-  social_capital Float @default(0)
-
-  street          String
-  zip_code        String?
+  street_address  String
+  postal_code     String?
   municipality_id String
   municipality    Municipality @relation(fields: [municipality_id], references: [id])
 
-  phone_number String @unique
+  owner_id String
+  owner    User   @relation(fields: [owner_id], references: [id])
 
-  businessUnits BusinessUnit[]
+  business_units  BusinessUnit[]
+  invoices        Invoice[]
+  financial_plans FinancialPlan[]
 
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([owner_id])
+  @@index([municipality_id])
   @@map("companies")
 }
 
 model BusinessUnit {
-  id          String           @id @default(uuid())
-  name        String
-  type        BusinessUnitType
-  description String
-  address     String
-  created_at  DateTime         @default(now())
-  updated_at  DateTime         @updatedAt
+  id      String           @id @default(uuid())
+  name    String
+  type    BusinessUnitType
+  address String
 
   company_id String
   company    Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
+
+  cash_registers CashRegister[]
+  invoices       Invoice[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@unique([company_id, name])
   @@map("business_units")
 }
 
-enum Regime {
-  SIMPLIFICADO
-  EXCLUSAO
-  GERAL
-}
-
-enum BusinessUnitType {
-  LOJA
-  ACADEMIA
-  CASA_DE_JOGOS
-}
-
 model Product {
-  id            String          @id @default(uuid())
-  name          String
-  description   String?
-  price         Float
-  category_id   String
-  category      ProductCategory @relation(fields: [category_id], references: [id])
-  created_at    DateTime        @default(now())
-  updated_at    DateTime        @updatedAt
-  stocks        Stock[]
-  productOrders ProductOrder[]
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal
+  vat_rate    Decimal
+  is_service  Boolean @default(false)
 
+  invoice_items InvoiceItem[]
+  stocks        Stock[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([name])
+  @@index([is_service])
   @@map("products")
 }
 
 model Stock {
-  id         String   @id @default(uuid())
+  id         String  @id @default(uuid())
   product_id String
-  quantity   Int
-  location   String
+  product    Product @relation(fields: [product_id], references: [id])
+
+  quantity Int
+  location String
+
+  supplier_id String?
+  supplier    Supplier? @relation(fields: [supplier_id], references: [id])
+
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  supplier Supplier? @relation(fields: [supplier_id], references: [id])
-
-  product     Product @relation(fields: [product_id], references: [id])
-  supplier_id String?
-
   @@unique([product_id, location])
+  @@index([product_id])
+  @@index([supplier_id])
   @@map("stocks")
 }
 
-model ProductCategory {
-  id         String    @id @default(uuid())
-  name       String    @unique
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  products   Product[]
+model Customer {
+  id           String  @id @default(uuid())
+  name         String
+  email        String?
+  phone_number String?
+  nif          String? @unique
 
-  @@map("product_categories")
-}
+  street_address String?
+  postal_code    String?
 
-model Costumer {
-  id            String       @id @default(uuid())
-  first_name    String?
-  last_name     String?      @default("Consumidor Final")
-  nif           String       @unique
-  costumer_type CostumerType
-  email         String?      @unique
-  phone_number  String?      @unique
-  created_at    DateTime     @default(now())
-  updated_at    DateTime     @updatedAt
-
-  street          String?
-  zip_code        String?
   municipality_id String
   municipality    Municipality @relation(fields: [municipality_id], references: [id])
 
-  @@unique([first_name, last_name])
-  @@map("costumers")
-}
+  invoices Invoice[]
 
-enum CostumerType {
-  INDIVIDUAL
-  COMPANY
-}
-
-model ProductOrder {
-  id         String   @id @default(uuid())
-  order_id   String
-  product_id String
-  quantity   Int
-  unit_price Float
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  order   Order   @relation(fields: [order_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
-
-  @@unique([order_id, product_id])
-  @@map("product_orders")
-}
-
-model Order {
-  id            String         @id @default(uuid())
-  order_date    DateTime       @default(now())
-  customer_id   String
-  created_at    DateTime       @default(now())
-  updated_at    DateTime       @updatedAt
-  customer      User           @relation(fields: [customer_id], references: [id])
-  productOrders ProductOrder[]
-
-  @@map("orders")
+  @@index([nif])
+  @@map("customers")
 }
 
 model Supplier {
-  id   String @id @default(uuid())
-  name String
-  nif  String @unique
+  id     String @id @default(uuid())
+  name   String
+  tax_id String @unique
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  stocks     Stock[]
+  street_address String
+  postal_code    String?
 
-  street          String
-  zip_code        String?
   municipality_id String
   municipality    Municipality @relation(fields: [municipality_id], references: [id])
 
+  stocks Stock[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
   @@map("suppliers")
+}
+
+model Invoice {
+  id         String      @id @default(uuid())
+  number     String
+  series     String
+  type       InvoiceType
+  issue_date DateTime    @default(now())
+
+  taxable_amount Decimal
+  vat_amount     Decimal
+
+  company_id String
+  company    Company @relation(fields: [company_id], references: [id])
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id])
+
+  customer_id String?
+  customer    Customer? @relation(fields: [customer_id], references: [id])
+
+  cash_register_id String
+  cash_register    CashRegister @relation(fields: [cash_register_id], references: [id])
+
+  items    InvoiceItem[]
+  payments Payment[]
+
+  created_at DateTime @default(now())
+
+  @@unique([number, series])
+  @@index([company_id])
+  @@index([business_unit_id])
+  @@index([cash_register_id])
+  @@index([issue_date])
+  @@index([type])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id         String    @id @default(uuid())
+  quantity   Int
+  unit_price Decimal
+  vat_rate   Decimal
+  vat_amount Decimal
+  subtotal   Decimal
+  vat_status VATStatus
+
+  invoice_id String
+  invoice    Invoice @relation(fields: [invoice_id], references: [id])
+
+  product_id String
+  product    Product @relation(fields: [product_id], references: [id])
+
+  @@index([invoice_id])
+  @@index([product_id])
+  @@index([vat_status])
+  @@map("invoice_items")
+}
+
+model Payment {
+  id           String        @id @default(uuid())
+  amount       Decimal
+  method       PaymentMethod
+  payment_date DateTime      @default(now())
+
+  invoice_id String
+  invoice    Invoice @relation(fields: [invoice_id], references: [id])
+
+  financial_plan_id String?
+  financial_plan    FinancialPlan? @relation(fields: [financial_plan_id], references: [id])
+
+  payment_type PaymentType
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([invoice_id])
+  @@index([method])
+  @@index([payment_date])
+  @@index([financial_plan_id])
+  @@map("payments")
+}
+
+model CashRegister {
+  id        String             @id @default(uuid())
+  status    CashRegisterStatus @default(CLOSED)
+  opened_at DateTime?
+  closed_at DateTime?
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id])
+
+  operator_id String
+  operator    User   @relation(fields: [operator_id], references: [id])
+
+  invoices    Invoice[]
+  movements   CashMovement[]
+  work_shifts WorkShift[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([business_unit_id])
+  @@index([status])
+  @@index([operator_id])
+  @@map("cash_registers")
+}
+
+model CashMovement {
+  id            String           @id @default(uuid())
+  type          CashMovementType
+  amount        Decimal
+  description   String?
+  movement_date DateTime         @default(now())
+
+  cash_register_id String
+  cash_register    CashRegister @relation(fields: [cash_register_id], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@index([cash_register_id])
+  @@index([type])
+  @@index([movement_date])
+  @@map("cash_movements")
+}
+
+model WorkShift {
+  id         String    @id @default(uuid())
+  start_time DateTime
+  end_time   DateTime?
+
+  opening_balance Decimal
+  closing_balance Decimal?
+
+  status WorkShiftStatus
+
+  operator_id String
+  operator    User   @relation(fields: [operator_id], references: [id])
+
+  cash_register_id String
+  cash_register    CashRegister @relation(fields: [cash_register_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([cash_register_id, status])
+  @@index([operator_id])
+  @@index([start_time])
+  @@map("work_shifts")
+}
+
+model Student {
+  id         String  @id @default(uuid())
+  first_name String
+  last_name  String
+  email      String  @unique
+  phone      String?
+
+  enrollments Enrollment[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([first_name, last_name])
+  @@map("students")
+}
+
+model Enrollment {
+  id         String  @id @default(uuid())
+  student_id String
+  student    Student @relation(fields: [student_id], references: [id])
+
+  start_date DateTime
+  end_date   DateTime?
+
+  class_id String
+  class    Class  @relation(fields: [class_id], references: [id])
+
+  financial_plans FinancialPlan[]
+
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  enrollmentBelts EnrollmentBelt[]
+
+  @@index([student_id])
+  @@index([class_id])
+  @@map("enrollments")
+}
+
+model EnrollmentBelt {
+  id            String     @id @default(uuid())
+  enrollment_id String
+  enrollment    Enrollment @relation(fields: [enrollment_id], references: [id])
+
+  belt_id String
+  belt    Belt   @relation(fields: [belt_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([enrollment_id, belt_id])
+  @@map("enrollment_belts")
+}
+
+model Instructor {
+  id         String  @id @default(uuid())
+  first_name String
+  last_name  String
+  email      String  @unique
+  phone      String?
+
+  belt_id String
+  belt    Belt   @relation(fields: [belt_id], references: [id])
+
+  classes Class[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([first_name, last_name])
+  @@map("instructors")
+}
+
+model Belt {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  instructors  Instructor[]
+  tuition_fees TuitionFee[]
+
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  enrollmentBelts EnrollmentBelt[]
+
+  @@map("belts")
+}
+
+model SchoolYear {
+  id         String   @id @default(uuid())
+  name       String
+  start_date DateTime
+  end_date   DateTime
+
+  classes         Class[]
+  financial_plans FinancialPlan[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("school_years")
+}
+
+model Class {
+  id       String @id @default(uuid())
+  name     String
+  schedule String
+
+  instructor_id String
+  instructor    Instructor @relation(fields: [instructor_id], references: [id])
+
+  school_year_id String
+  school_year    SchoolYear @relation(fields: [school_year_id], references: [id])
+
+  enrollments Enrollment[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@unique([name, school_year_id])
+  @@map("classes")
+}
+
+model TuitionFee {
+  id       String   @id @default(uuid())
+  amount   Decimal
+  due_date DateTime
+  paid     Boolean  @default(false)
+
+  belt_id String
+  belt    Belt   @relation(fields: [belt_id], references: [id])
+
+  fee              Decimal
+  enrollment_fee   Decimal
+  confirmation_fee Decimal
+  fine_tax         Decimal?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("tuition_fees")
+}
+
+model FinancialPlan {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+
+  school_year_id String
+  school_year    SchoolYear @relation(fields: [school_year_id], references: [id])
+
+  enrollment_id String
+  enrollment    Enrollment @relation(fields: [enrollment_id], references: [id])
+
+  company_id String
+  company    Company @relation(fields: [company_id], references: [id])
+
+  month    String
+  year     String
+  due_date DateTime
+
+  status FinancialPlanStatus
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  payments   Payment[]
+
+  @@index([company_id])
+  @@index([school_year_id])
+  @@index([enrollment_id])
+  @@index([status])
+  @@index([due_date])
+  @@map("financial_plans")
 }
