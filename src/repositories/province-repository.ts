@@ -1,6 +1,6 @@
-import type { Province } from 'generated/prisma/client'
+import type { Province } from "../../generated/prisma/client";
 
 export interface ProvinceRepository {
-  findById(provinceId: string): Promise<Province | null>
-  findAll(): Promise<Province[]>
+  findById(provinceId: string): Promise<Province | null>;
+  findAll(): Promise<Province[]>;
 }

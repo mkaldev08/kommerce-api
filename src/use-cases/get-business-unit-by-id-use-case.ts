@@ -1,13 +1,13 @@
-import type { BusinessUnit } from 'generated/prisma/client'
-import type { BusinessUnitRepository } from '@/repositories/business-unit-repository'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import type { BusinessUnit } from "../../generated/prisma/client";
+import type { BusinessUnitRepository } from "@/repositories/business-unit-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface GetBusinessUnitByIdUseCaseParams {
-  businessUnitId: string
+  businessUnitId: string;
 }
 
 interface GetBusinessUnitByIdUseCaseResponse {
-  businessUnit: BusinessUnit
+  businessUnit: BusinessUnit;
 }
 
 export class GetBusinessUnitByIdUseCase {
@@ -16,17 +16,17 @@ export class GetBusinessUnitByIdUseCase {
   async execute(
     params: GetBusinessUnitByIdUseCaseParams,
   ): Promise<GetBusinessUnitByIdUseCaseResponse> {
-    const { businessUnitId } = params
+    const { businessUnitId } = params;
 
     const businessUnit =
-      await this.businessUnitRepository.findById(businessUnitId)
+      await this.businessUnitRepository.findById(businessUnitId);
 
     if (!businessUnit) {
-      throw new ResourceNotFoundError()
+      throw new ResourceNotFoundError();
     }
 
     return {
       businessUnit,
-    }
+    };
   }
 }

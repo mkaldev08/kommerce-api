@@ -1,13 +1,13 @@
-import type { Company } from 'generated/prisma/client'
-import type { CompaniesRepository } from '@/repositories/companies-repository'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import type { Company } from "../../generated/prisma/client";
+import type { CompaniesRepository } from "@/repositories/companies-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface FindCompanyByIdUseCaseParams {
-  companyId: string
+  companyId: string;
 }
 
 interface FindCompanyByIdUseCaseResponse {
-  company: Company
+  company: Company;
 }
 
 export class FindCompanyByIdUseCase {
@@ -16,16 +16,16 @@ export class FindCompanyByIdUseCase {
   async execute(
     params: FindCompanyByIdUseCaseParams,
   ): Promise<FindCompanyByIdUseCaseResponse> {
-    const { companyId } = params
+    const { companyId } = params;
 
-    const company = await this.companiesRepository.findById(companyId)
+    const company = await this.companiesRepository.findById(companyId);
 
     if (!company) {
-      throw new ResourceNotFoundError()
+      throw new ResourceNotFoundError();
     }
 
     return {
       company,
-    }
+    };
   }
 }

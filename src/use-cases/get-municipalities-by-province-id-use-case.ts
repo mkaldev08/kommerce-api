@@ -1,13 +1,13 @@
-import type { Municipality } from 'generated/prisma/client'
-import type { MunicipalityRepository } from '@/repositories/municipality-repository'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import type { Municipality } from "../../generated/prisma/client";
+import type { MunicipalityRepository } from "@/repositories/municipality-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface GetMunicipalitiesByProvinceIdUseCaseParams {
-  provinceId: string
+  provinceId: string;
 }
 
 interface GetMunicipalitiesByProvinceIdUseCaseResponse {
-  municipalities: Municipality[]
+  municipalities: Municipality[];
 }
 
 export class GetMunicipalitiesByProvinceIdUseCase {
@@ -16,17 +16,17 @@ export class GetMunicipalitiesByProvinceIdUseCase {
   async execute(
     params: GetMunicipalitiesByProvinceIdUseCaseParams,
   ): Promise<GetMunicipalitiesByProvinceIdUseCaseResponse> {
-    const { provinceId } = params
+    const { provinceId } = params;
 
     const municipalities =
-      await this.municipalityRepository.findByProvinceId(provinceId)
+      await this.municipalityRepository.findByProvinceId(provinceId);
 
     if (municipalities.length === 0) {
-      throw new ResourceNotFoundError()
+      throw new ResourceNotFoundError();
     }
 
     return {
       municipalities,
-    }
+    };
   }
 }

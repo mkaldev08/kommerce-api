@@ -165,6 +165,19 @@ model BusinessUnit {
   @@map("business_units")
 }
 
+model Category {
+  id   String @id @default(uuid())
+  name String @unique
+
+  products Product[]
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@index([name])
+  @@map("categories")
+}
+
 model Product {
   id          String  @id @default(uuid())
   name        String
@@ -172,6 +185,10 @@ model Product {
   price       Decimal
   vat_rate    Decimal
   is_service  Boolean @default(false)
+  is_active   Boolean @default(true)
+
+  category_id String?
+  category    Category? @relation(fields: [category_id], references: [id])
 
   invoice_items InvoiceItem[]
   stocks        Stock[]
@@ -181,6 +198,8 @@ model Product {
 
   @@index([name])
   @@index([is_service])
+  @@index([is_active])
+  @@index([category_id])
   @@map("products")
 }
 

@@ -1,14 +1,14 @@
-import type { Company } from 'generated/prisma/client'
-import type { CompaniesRepository } from '@/repositories/companies-repository'
-import type { UsersRepository } from '@/repositories/users-repository'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import type { Company } from "../../generated/prisma/client";
+import type { CompaniesRepository } from "@/repositories/companies-repository";
+import type { UsersRepository } from "@/repositories/users-repository";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface FindOneCompanyByOwnerIdUseCaseParams {
-  ownerId: string
+  ownerId: string;
 }
 
 interface FindOneCompanyByOwnerIdUseCaseResponse {
-  company: Company
+  company: Company;
 }
 
 export class FindOneCompanyByOwnerIdUseCase {
@@ -20,22 +20,22 @@ export class FindOneCompanyByOwnerIdUseCase {
   async execute(
     params: FindOneCompanyByOwnerIdUseCaseParams,
   ): Promise<FindOneCompanyByOwnerIdUseCaseResponse> {
-    const { ownerId } = params
+    const { ownerId } = params;
 
-    const user = await this.usersRepository.findById(ownerId)
+    const user = await this.usersRepository.findById(ownerId);
 
     if (!user) {
-      throw new ResourceNotFoundError()
+      throw new ResourceNotFoundError();
     }
 
-    const company = await this.companiesRepository.findOneByOwnerId(ownerId)
+    const company = await this.companiesRepository.findOneByOwnerId(ownerId);
 
     if (!company) {
-      throw new ResourceNotFoundError()
+      throw new ResourceNotFoundError();
     }
 
     return {
       company,
-    }
+    };
   }
 }
