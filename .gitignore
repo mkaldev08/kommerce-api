@@ -6,3 +6,4 @@ db/*.db
 /generated/prisma
 
 build
+/generated/prisma

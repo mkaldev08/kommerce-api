@@ -6,7 +6,7 @@ import { UserAlreadyExistsError } from "./errors/user-already-exists-error";
 interface RegisterUseCaseParams {
   username: string;
   phoneNumber: string;
-  name: string;
+  fullName: string;
   email: string;
   password: string;
 }
@@ -20,7 +20,7 @@ export class RegisterUseCase {
 
   async execute({
     email,
-    name,
+    fullName,
     password,
     phoneNumber,
     username,
@@ -38,7 +38,7 @@ export class RegisterUseCase {
 
     const user = await this.usersRepository.create({
       email,
-      name,
+      full_name: fullName,
       password_hash: passwordHashed,
       phone_number: phoneNumber,
       username,

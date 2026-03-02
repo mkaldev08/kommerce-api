@@ -1,45 +1,55 @@
-import type { Company } from 'generated/prisma/client'
-import type { CompanyUncheckedCreateInput } from 'generated/prisma/models'
-import { Regime } from '@/use-cases/create-company-use-case'
-import type { CompaniesRepository } from '../companies-repository'
+import type { Company } from "generated/prisma/client";
+import type { CompanyUncheckedCreateInput } from "generated/prisma/models";
+import type { CompaniesRepository } from "../companies-repository";
 
 export class InMemoryCompaniesRepository implements CompaniesRepository {
   async findByEmail(email: string) {
-    return this.items.find((item) => item.email === email) || null
+    return this.items.find((item) => item.email === email) || null;
   }
   async findByPhoneNumber(phoneNumber: string) {
-    return this.items.find((item) => item.phone_number === phoneNumber) || null
+    return this.items.find((item) => item.phone_number === phoneNumber) || null;
   }
   async findAllByOwnerId(ownerId: string) {
-    return this.items.filter((item) => item.user_owner_id === ownerId)
+    return this.items.filter((item) => item.owner_id === ownerId);
   }
-  async findByNif(nif: string) {
-    return this.items.find((item) => item.nif === nif) || null
+  async findByCommercialRegistry(commercialRegistry: string) {
+    return (
+      this.items.find(
+        (item) => item.commercial_registry === commercialRegistry,
+      ) || null
+    );
   }
-  private items: Company[] = []
+  private items: Company[] = [];
   async findById(companyId: string) {
-    const company = this.items.find((item) => item.id === companyId)
+    const company = this.items.find((item) => item.id === companyId);
 
-    if (!company) return null
-    return company
+    if (!company) return null;
+    return company;
   }
 
   async create(data: CompanyUncheckedCreateInput) {
     const company: Company = {
       id: data.id ?? crypto.randomUUID(),
-      ...data,
+      legal_name: data.legal_name as string,
+      trade_name: data.trade_name as string,
+      commercial_registry: data.commercial_registry as string,
+      document_code: data.document_code as string,
+      email: data.email as string,
+      phone_number: data.phone_number as string,
+      vat_regime: data.vat_regime as any,
+      share_capital: data.share_capital as any,
+      street_address: data.street_address as string,
+      postal_code: data.postal_code as string | null,
+      municipality_id: data.municipality_id as string,
+      owner_id: data.owner_id as string,
       created_at: new Date(),
       updated_at: new Date(),
-      website: data.website ?? null,
-      regime: data.regime ?? Regime.SIMPLIFICADO,
-      social_capital: data.social_capital ?? 0,
-      zip_code: data.zip_code ?? null,
-    }
-    this.items.push(company)
-    return company
+    };
+    this.items.push(company);
+    return company;
   }
   async findOneByOwnerId(ownerId: string): Promise<Company | null> {
-    const company = this.items.find((item) => item.user_owner_id === ownerId)
-    return company || null
+    const company = this.items.find((item) => item.owner_id === ownerId);
+    return company || null;
   }
 }

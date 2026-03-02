@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -97,8 +98,7 @@ model Municipality {
 model User {
   id            String  @id @default(uuid())
   username      String  @unique
-  first_name    String
-  last_name     String?
+  full_name     String
   email         String  @unique
   phone_number  String  @unique
   password_hash String
@@ -119,8 +119,9 @@ model Company {
   legal_name          String
   trade_name          String
   commercial_registry String    @unique
-  email               String
-  phone_number        String
+  document_code       String
+  email               String    @unique
+  phone_number        String    @unique
   vat_regime          VATRegime
 
   share_capital Decimal

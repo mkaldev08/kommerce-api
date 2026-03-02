@@ -1,38 +1,41 @@
-import type { BusinessUnitType, Company } from 'generated/prisma/client'
-import type { BusinessUnitRepository } from '@/repositories/business-unit-repository'
-import type { CompaniesRepository } from '@/repositories/companies-repository'
-import type { UsersRepository } from '@/repositories/users-repository'
-import { CompanyAlreadyExistsError } from './errors/company-already-exists-error'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
+import type {
+  BusinessUnitType,
+  Company,
+  VATRegime,
+} from "generated/prisma/client";
+import type { BusinessUnitRepository } from "@/repositories/business-unit-repository";
+import type { CompaniesRepository } from "@/repositories/companies-repository";
+import type { UsersRepository } from "@/repositories/users-repository";
+import { CompanyAlreadyExistsError } from "./errors/company-already-exists-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
+// Map old regime values to VATRegime enum (for backward compatibility)
 export enum Regime {
-  SIMPLIFICADO = 'SIMPLIFICADO',
-  EXCLUSAO = 'EXCLUSAO',
-  GERAL = 'GERAL',
+  SIMPLIFICADO = "SIMPLIFIED",
+  EXCLUSAO = "EXEMPTION",
+  GERAL = "GENERAL",
 }
 
 interface CreateCompanyUseCaseParams {
-  id?: string
-  name: string
-  created_at?: Date | string
-  nif: string
-  social_reason: string
-  registration_number: string
-  website?: string | null
-  updated_at?: Date | string
-  regime?: Regime
-  document_code: string
-  social_capital?: number
-  user_owner_id: string
-  email: string
-  phone_number: string
-  street: string
-  zip_code?: string | null
-  municipality_id: string
+  id?: string;
+  trade_name: string;
+  created_at?: Date | string;
+  commercial_registry: string;
+  document_code: string;
+  legal_name: string;
+  updated_at?: Date | string;
+  vat_regime?: VATRegime;
+  share_capital?: number;
+  owner_id: string;
+  email: string;
+  phone_number: string;
+  street_address: string;
+  postal_code?: string | null;
+  municipality_id: string;
 }
 
 interface CreateCompanyUseCaseResponse {
-  company: Company
+  company: Company;
 }
 
 export class CreateCompanyUseCase {
@@ -51,14 +54,16 @@ export class CreateCompanyUseCase {
       existingCompanyByEmail,
       existingCompanyByPhoneNumber,
     ] = await Promise.all([
-      this.usersRepository.findById(params.user_owner_id),
-      this.companiesRepository.findByNif(params.nif),
+      this.usersRepository.findById(params.owner_id),
+      this.companiesRepository.findByCommercialRegistry(
+        params.commercial_registry,
+      ),
       this.companiesRepository.findByEmail(params.email),
       this.companiesRepository.findByPhoneNumber(params.phone_number),
-    ])
+    ]);
 
     if (!user) {
-      throw new ResourceNotFoundError()
+      throw new ResourceNotFoundError();
     }
 
     if (
@@ -66,51 +71,56 @@ export class CreateCompanyUseCase {
       existingCompanyByEmail ||
       existingCompanyByPhoneNumber
     ) {
-      throw new CompanyAlreadyExistsError()
+      throw new CompanyAlreadyExistsError();
     }
 
     const company = await this.companiesRepository.create({
-      ...params,
-      regime: params.regime ?? Regime.SIMPLIFICADO,
-      user_owner_id: user.id,
-    })
+      id: params.id,
+      legal_name: params.legal_name,
+      trade_name: params.trade_name,
+      commercial_registry: params.commercial_registry,
+      document_code: params.document_code,
+      email: params.email,
+      phone_number: params.phone_number,
+      vat_regime: params.vat_regime ?? "SIMPLIFIED",
+      share_capital: params.share_capital ?? 0,
+      street_address: params.street_address,
+      postal_code: params.postal_code ?? null,
+      municipality_id: params.municipality_id,
+      owner_id: user.id,
+    });
 
     const defaultBusinessUnits: Array<{
-      name: string
-      type: BusinessUnitType
-      description: string
+      name: string;
+      type: BusinessUnitType;
     }> = [
       {
-        name: 'Loja',
-        type: 'LOJA',
-        description: 'Gestao de inventario e vendas',
+        name: "Loja",
+        type: "STORE",
       },
       {
-        name: 'Academia',
-        type: 'ACADEMIA',
-        description: 'Gestao de membros e aulas',
+        name: "Academia",
+        type: "ACADEMY",
       },
       {
-        name: 'Casa de Jogos',
-        type: 'CASA_DE_JOGOS',
-        description: 'Gestao de uso e venda de jogos',
+        name: "Casa de Jogos",
+        type: "GAMING_HOUSE",
       },
-    ]
+    ];
 
     await Promise.all(
       defaultBusinessUnits.map((unit) =>
         this.businessUnitRepository.create({
           name: unit.name,
           type: unit.type,
-          description: unit.description,
-          address: params.street,
+          address: params.street_address,
           company_id: company.id,
         }),
       ),
-    )
+    );
 
     return {
       company,
-    }
+    };
   }
 }
