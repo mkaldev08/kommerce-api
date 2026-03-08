@@ -3,7 +3,7 @@ node_modules
 
 #Database
 db/*.db
-/generated/prisma
 
+# generated build/runtime artifacts
 build
 /generated/prisma

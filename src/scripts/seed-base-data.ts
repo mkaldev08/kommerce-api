@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import { randomUUID } from "node:crypto";
+import { DatabaseSync } from "node:sqlite";
 
 const LUANDA_MUNICIPALITIES = [
   "Cazenga",
@@ -15,39 +16,73 @@ const LUANDA_MUNICIPALITIES = [
   "Ingombota",
 ];
 
+function resolveDatabasePath(databaseUrl: string): string {
+  if (!databaseUrl.startsWith("file:")) {
+    throw new Error(`[seed] Unsupported DATABASE_URL: ${databaseUrl}`);
+  }
+
+  const rawPath = databaseUrl.slice(5);
+
+  if (process.platform === "win32") {
+    return rawPath.replace(/^\/(\w:\/)/, "$1");
+  }
+
+  return rawPath;
+}
+
 async function runSeedBaseData(): Promise<void> {
+  const cliDatabaseArg = process.argv[2];
+  const databaseUrl =
+    process.env.DATABASE_URL ?? process.env.database_url ?? cliDatabaseArg;
+
+  if (!databaseUrl) {
+    throw new Error(
+      "[seed] DATABASE_URL is not defined. Set DATABASE_URL=file:/absolute/path/to/kommerce.db or pass it as first argument.",
+    );
+  }
+
+  const databasePath = resolveDatabasePath(databaseUrl);
+  const db = new DatabaseSync(databasePath);
+
   console.log("[seed] Seeding base data...");
 
-  const luandaProvince = await prisma.province.upsert({
-    where: { name: "Luanda" },
-    update: {},
-    create: { name: "Luanda" },
-  });
+  const existingProvince = db
+    .prepare(`SELECT id FROM "Province" WHERE name = ? LIMIT 1`)
+    .get("Luanda") as { id: string } | undefined;
+
+  const provinceId = existingProvince?.id ?? randomUUID();
+
+  if (!existingProvince) {
+    db.prepare(
+      `INSERT INTO "Province" (id, name, created_at, updated_at)
+       VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+    ).run(provinceId, "Luanda");
+  }
 
   for (const municipalityName of LUANDA_MUNICIPALITIES) {
-    await prisma.municipality.upsert({
-      where: {
-        name_province_id: {
-          name: municipalityName,
-          province_id: luandaProvince.id,
-        },
-      },
-      update: {},
-      create: {
-        name: municipalityName,
-        province_id: luandaProvince.id,
-      },
-    });
+    const exists = db
+      .prepare(
+        `SELECT id
+         FROM "Municipality"
+         WHERE name = ? AND province_id = ?
+         LIMIT 1`,
+      )
+      .get(municipalityName, provinceId);
+
+    if (!exists) {
+      db.prepare(
+        `INSERT INTO "Municipality" (id, name, province_id, created_at, updated_at)
+         VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+      ).run(randomUUID(), municipalityName, provinceId);
+    }
   }
+
+  db.close();
 
   console.log("[seed] Base data seeded successfully.");
 }
 
-runSeedBaseData()
-  .catch((error) => {
-    console.error("[seed] Failed to seed base data:", error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+runSeedBaseData().catch((error) => {
+  console.error("[seed] Failed to seed base data:", error);
+  process.exit(1);
+});
