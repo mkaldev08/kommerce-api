@@ -10,7 +10,17 @@ export const app = fastify();
 const API_VERSION = "/api/v1";
 
 app.register(cors, {
-  origin: env.NODE_ENV === "production" ? [] : "http://localhost:5173",
+  origin: (origin, callback) => {
+    const allowedOrigins = ["http://localhost:5173", "http://127.0.0.1:5173"];
+    const isElectronOrigin = origin === "null" || !origin;
+
+    if (isElectronOrigin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error("Origin not allowed by CORS"), false);
+  },
   credentials: true,
 });
 

@@ -44,6 +44,12 @@ enum WorkShiftStatus {
   SUSPENDED // Turno suspenso
 }
 
+enum SaleStatus {
+  COMPLETED
+  PENDING
+  CANCELLED
+}
+
 enum PaymentMethod {
   CASH // Dinheiro
   CARD // Cartão bancário
@@ -273,6 +279,11 @@ model Invoice {
 
   taxable_amount Decimal
   vat_amount     Decimal
+  total_amount   Decimal @default(0)
+
+  status         SaleStatus @default(COMPLETED)
+  pending_reason String?
+  cancel_reason  String?
 
   company_id String
   company    Company @relation(fields: [company_id], references: [id])
@@ -290,6 +301,7 @@ model Invoice {
   payments Payment[]
 
   created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@unique([number, series])
   @@index([company_id])
@@ -297,6 +309,7 @@ model Invoice {
   @@index([cash_register_id])
   @@index([issue_date])
   @@index([type])
+  @@index([status])
   @@map("invoices")
 }
 

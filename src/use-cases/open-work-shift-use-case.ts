@@ -1,19 +1,18 @@
-import type { WorkShiftStatus } from '@/modules/store/domain/enums'
-import { CashRegisterClosedError } from '../errors/cash-register-closed-error'
-import { ResourceNotFoundError } from '../errors/resource-not-found-error'
-import { WorkShiftAlreadyOpenError } from '../errors/work-shift-already-open-error'
-import type { CashRegistersRepository } from '../ports/repositories/cash-registers-repository'
-import type { WorkShiftsRepository } from '../ports/repositories/work-shifts-repository'
-import { err, ok, type Result } from '../result'
+import { CashRegisterStatus, WorkShiftStatus } from "generated/prisma/enums";
+import type { CashRegistersRepository } from "@/repositories/cash-registers-repository";
+import type { WorkShiftsRepository } from "@/repositories/work-shifts-repository";
+import { CashRegisterClosedError } from "./errors/cash-register-closed-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
+import { WorkShiftAlreadyOpenError } from "./errors/work-shift-already-open-error";
 
 interface OpenWorkShiftRequest {
-  cashRegisterId: string
-  operatorId: string
-  openingBalance: number
+  cashRegisterId: string;
+  operatorId: string;
+  openingBalance: number;
 }
 
 interface OpenWorkShiftResponse {
-  workShiftId: string
+  workShiftId: string;
 }
 
 export class OpenWorkShiftUseCase {
@@ -22,29 +21,27 @@ export class OpenWorkShiftUseCase {
     private workShiftsRepository: WorkShiftsRepository,
   ) {}
 
-  async execute(
-    request: OpenWorkShiftRequest,
-  ): Promise<Result<OpenWorkShiftResponse, Error>> {
+  async execute(request: OpenWorkShiftRequest): Promise<OpenWorkShiftResponse> {
     const cashRegister = await this.cashRegistersRepository.findById(
       request.cashRegisterId,
-    )
+    );
 
     if (!cashRegister) {
-      return err(new ResourceNotFoundError())
+      throw new ResourceNotFoundError();
     }
 
-    if (cashRegister.status !== 'OPEN') {
-      return err(new CashRegisterClosedError())
+    if (cashRegister.status !== CashRegisterStatus.OPEN) {
+      throw new CashRegisterClosedError();
     }
 
     const existingShift =
       await this.workShiftsRepository.findOpenByCashRegisterAndOperator(
         request.cashRegisterId,
         request.operatorId,
-      )
+      );
 
     if (existingShift) {
-      return err(new WorkShiftAlreadyOpenError())
+      throw new WorkShiftAlreadyOpenError();
     }
 
     const workShift = await this.workShiftsRepository.create({
@@ -52,9 +49,9 @@ export class OpenWorkShiftUseCase {
       operatorId: request.operatorId,
       openingBalance: request.openingBalance,
       startTime: new Date(),
-      status: 'OPEN' as WorkShiftStatus,
-    })
+      status: WorkShiftStatus.OPEN,
+    });
 
-    return ok({ workShiftId: workShift.id })
+    return { workShiftId: workShift.id };
   }
 }

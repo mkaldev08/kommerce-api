@@ -1,33 +1,33 @@
-import type { WorkShiftStatus } from '@/modules/store/domain/enums'
+import type { WorkShiftStatus } from "generated/prisma/enums";
 
 export interface WorkShiftData {
-  id: string
-  startTime: Date
-  endTime?: Date | null
-  openingBalance: number
-  closingBalance?: number | null
-  status: WorkShiftStatus
-  operatorId: string
-  cashRegisterId: string
+  id: string;
+  startTime: Date;
+  endTime?: Date | null;
+  openingBalance: number;
+  closingBalance?: number | null;
+  status: WorkShiftStatus;
+  operatorId: string;
+  cashRegisterId: string;
 }
 
 export interface CreateWorkShiftInput {
-  startTime?: Date
-  openingBalance: number
-  status: WorkShiftStatus
-  operatorId: string
-  cashRegisterId: string
+  startTime?: Date;
+  openingBalance: number;
+  status: WorkShiftStatus;
+  operatorId: string;
+  cashRegisterId: string;
 }
 
 export interface WorkShiftsRepository {
-  create(data: CreateWorkShiftInput): Promise<WorkShiftData>
-  findById(id: string): Promise<WorkShiftData | null>
+  create(data: CreateWorkShiftInput): Promise<WorkShiftData>;
+  findById(id: string): Promise<WorkShiftData | null>;
   findOpenByCashRegisterAndOperator(
     cashRegisterId: string,
     operatorId: string,
-  ): Promise<WorkShiftData | null>
+  ): Promise<WorkShiftData | null>;
   findOpenByCashRegisterId(
     cashRegisterId: string,
-  ): Promise<WorkShiftData | null>
-  close(id: string, closingBalance: number, endTime?: Date): Promise<void>
+  ): Promise<WorkShiftData | null>;
+  close(id: string, closingBalance: number, endTime?: Date): Promise<void>;
 }

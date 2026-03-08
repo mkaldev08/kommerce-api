@@ -1,53 +1,37 @@
-import { Money } from '@/modules/store/domain/value-objects/money'
-import type { CashMovementsRepository } from '../ports/repositories/cash-movements-repository'
-import type { PaymentsRepository } from '../ports/repositories/payments-repository'
+import { CashMovementType } from "generated/prisma/enums";
+import type { CashMovementsRepository } from "@/repositories/cash-movements-repository";
 
 interface CalculateCashBalanceRequest {
-  cashRegisterId: string
-  openingBalance: number
-  startTime: Date
-  endTime: Date
+  cashRegisterId: string;
+  openingBalance: number;
+  startTime: Date;
+  endTime: Date;
 }
 
 interface CalculateCashBalanceResponse {
-  expectedBalance: number
+  expectedBalance: number;
 }
 
 export class CalculateCashBalanceUseCase {
-  constructor(
-    private cashMovementsRepository: CashMovementsRepository,
-    private paymentsRepository: PaymentsRepository,
-  ) {}
+  constructor(private cashMovementsRepository: CashMovementsRepository) {}
 
   async execute(
     params: CalculateCashBalanceRequest,
   ): Promise<CalculateCashBalanceResponse> {
-    const [movements, cashPaymentsTotal] = await Promise.all([
-      this.cashMovementsRepository.listByRegisterBetween(
-        params.cashRegisterId,
-        params.startTime,
-        params.endTime,
-      ),
-      this.paymentsRepository.getCashTotalForRegisterBetween(
-        params.cashRegisterId,
-        params.startTime,
-        params.endTime,
-      ),
-    ])
+    const movements = await this.cashMovementsRepository.listByRegisterBetween(
+      params.cashRegisterId,
+      params.startTime,
+      params.endTime,
+    );
 
-    const opening = Money.fromDecimal(params.openingBalance)
     const movementsTotal = movements.reduce((total, movement) => {
-      const amount = Money.fromDecimal(movement.amount)
-      return movement.type === 'ENTRY'
-        ? total.add(amount)
-        : total.subtract(amount)
-    }, Money.zero())
+      return movement.type === CashMovementType.ENTRY
+        ? total + movement.amount
+        : total - movement.amount;
+    }, 0);
 
-    const expectedBalance = opening
-      .add(movementsTotal)
-      .add(Money.fromDecimal(cashPaymentsTotal))
-      .toDecimal()
+    const expectedBalance = params.openingBalance + movementsTotal;
 
-    return { expectedBalance }
+    return { expectedBalance };
   }
 }

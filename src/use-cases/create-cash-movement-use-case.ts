@@ -1,19 +1,21 @@
-import type { CashMovementType } from '@/modules/store/domain/enums'
-import { CashRegisterClosedError } from '../errors/cash-register-closed-error'
-import { ResourceNotFoundError } from '../errors/resource-not-found-error'
-import type { CashMovementsRepository } from '../ports/repositories/cash-movements-repository'
-import type { CashRegistersRepository } from '../ports/repositories/cash-registers-repository'
-import { err, ok, type Result } from '../result'
+import {
+  CashRegisterStatus,
+  type CashMovementType,
+} from "generated/prisma/enums";
+import type { CashMovementsRepository } from "@/repositories/cash-movements-repository";
+import type { CashRegistersRepository } from "@/repositories/cash-registers-repository";
+import { CashRegisterClosedError } from "./errors/cash-register-closed-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface CreateCashMovementRequest {
-  cashRegisterId: string
-  type: CashMovementType
-  amount: number
-  description?: string | null
+  cashRegisterId: string;
+  type: CashMovementType;
+  amount: number;
+  description?: string | null;
 }
 
 interface CreateCashMovementResponse {
-  movementId: string
+  movementId: string;
 }
 
 export class CreateCashMovementUseCase {
@@ -24,17 +26,17 @@ export class CreateCashMovementUseCase {
 
   async execute(
     request: CreateCashMovementRequest,
-  ): Promise<Result<CreateCashMovementResponse, Error>> {
+  ): Promise<CreateCashMovementResponse> {
     const cashRegister = await this.cashRegistersRepository.findById(
       request.cashRegisterId,
-    )
+    );
 
     if (!cashRegister) {
-      return err(new ResourceNotFoundError())
+      throw new ResourceNotFoundError();
     }
 
-    if (cashRegister.status !== 'OPEN') {
-      return err(new CashRegisterClosedError())
+    if (cashRegister.status !== CashRegisterStatus.OPEN) {
+      throw new CashRegisterClosedError();
     }
 
     const movement = await this.cashMovementsRepository.create({
@@ -43,8 +45,8 @@ export class CreateCashMovementUseCase {
       amount: request.amount,
       description: request.description ?? null,
       movementDate: new Date(),
-    })
+    });
 
-    return ok({ movementId: movement.id })
+    return { movementId: movement.id };
   }
 }

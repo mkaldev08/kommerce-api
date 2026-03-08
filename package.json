@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "start": "node build/server.js",
-    "build": "tsup ./src -d build --format esm cjs --minify --external @prisma/client",
+    "build": "tsup src/server.ts src/scripts/seed-base-data.ts --out-dir build --format esm --external @prisma/client && node -e \"const fs=require('node:fs');fs.writeFileSync('build/package.json', JSON.stringify({type:'module'}, null, 2));\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

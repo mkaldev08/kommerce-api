@@ -1,58 +1,57 @@
-import type { CashRegisterStatus } from '@/modules/store/domain/enums'
-import { BusinessUnitNotStoreError } from '../errors/business-unit-not-store-error'
-import { CashRegisterAlreadyOpenError } from '../errors/cash-register-already-open-error'
-import { ResourceNotFoundError } from '../errors/resource-not-found-error'
-import type { BusinessUnitsRepository } from '../ports/repositories/business-units-repository'
-import type { CashRegistersRepository } from '../ports/repositories/cash-registers-repository'
-import { err, ok, type Result } from '../result'
+import { CashRegisterStatus } from "generated/prisma/enums";
+import type { BusinessUnitRepository } from "@/repositories/business-unit-repository";
+import type { CashRegistersRepository } from "@/repositories/cash-registers-repository";
+import { BusinessUnitNotStoreError } from "./errors/business-unit-not-store-error";
+import { CashRegisterAlreadyOpenError } from "./errors/cash-register-already-open-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
 interface OpenCashRegisterRequest {
-  businessUnitId: string
-  operatorId: string
+  businessUnitId: string;
+  operatorId: string;
 }
 
 interface OpenCashRegisterResponse {
-  cashRegisterId: string
+  cashRegisterId: string;
 }
 
 export class OpenCashRegisterUseCase {
   constructor(
-    private businessUnitsRepository: BusinessUnitsRepository,
+    private businessUnitRepository: BusinessUnitRepository,
     private cashRegistersRepository: CashRegistersRepository,
   ) {}
 
   async execute(
     request: OpenCashRegisterRequest,
-  ): Promise<Result<OpenCashRegisterResponse, Error>> {
-    const businessUnit = await this.businessUnitsRepository.findById(
+  ): Promise<OpenCashRegisterResponse> {
+    const businessUnit = await this.businessUnitRepository.findById(
       request.businessUnitId,
-    )
+    );
 
     if (!businessUnit) {
-      return err(new ResourceNotFoundError())
+      throw new ResourceNotFoundError();
     }
 
-    if (businessUnit.type !== 'STORE') {
-      return err(new BusinessUnitNotStoreError())
+    if (businessUnit.type !== "STORE") {
+      throw new BusinessUnitNotStoreError();
     }
 
     const existingOpen =
       await this.cashRegistersRepository.findOpenByBusinessUnitId(
         request.businessUnitId,
-      )
+      );
 
     if (existingOpen) {
-      return err(new CashRegisterAlreadyOpenError())
+      throw new CashRegisterAlreadyOpenError();
     }
 
     const cashRegister = await this.cashRegistersRepository.create({
       businessUnitId: request.businessUnitId,
       operatorId: request.operatorId,
-      status: 'OPEN' as CashRegisterStatus,
+      status: CashRegisterStatus.OPEN,
       openedAt: new Date(),
       closedAt: null,
-    })
+    });
 
-    return ok({ cashRegisterId: cashRegister.id })
+    return { cashRegisterId: cashRegister.id };
   }
 }

@@ -1,16 +1,16 @@
-import { CashRegisterClosedError } from '../errors/cash-register-closed-error'
-import { ResourceNotFoundError } from '../errors/resource-not-found-error'
-import { WorkShiftStillOpenError } from '../errors/work-shift-still-open-error'
-import type { CashRegistersRepository } from '../ports/repositories/cash-registers-repository'
-import type { WorkShiftsRepository } from '../ports/repositories/work-shifts-repository'
-import { err, ok, type Result } from '../result'
+import { CashRegisterStatus } from "generated/prisma/enums";
+import type { CashRegistersRepository } from "@/repositories/cash-registers-repository";
+import type { WorkShiftsRepository } from "@/repositories/work-shifts-repository";
+import { CashRegisterClosedError } from "./errors/cash-register-closed-error";
+import { ResourceNotFoundError } from "./errors/resource-not-found-error";
+import { WorkShiftStillOpenError } from "./errors/work-shift-still-open-error";
 
 interface CloseCashRegisterRequest {
-  cashRegisterId: string
+  cashRegisterId: string;
 }
 
 interface CloseCashRegisterResponse {
-  cashRegisterId: string
+  cashRegisterId: string;
 }
 
 export class CloseCashRegisterUseCase {
@@ -21,34 +21,34 @@ export class CloseCashRegisterUseCase {
 
   async execute(
     request: CloseCashRegisterRequest,
-  ): Promise<Result<CloseCashRegisterResponse, Error>> {
+  ): Promise<CloseCashRegisterResponse> {
     const cashRegister = await this.cashRegistersRepository.findById(
       request.cashRegisterId,
-    )
+    );
 
     if (!cashRegister) {
-      return err(new ResourceNotFoundError())
+      throw new ResourceNotFoundError();
     }
 
-    if (cashRegister.status !== 'OPEN') {
-      return err(new CashRegisterClosedError())
+    if (cashRegister.status !== CashRegisterStatus.OPEN) {
+      throw new CashRegisterClosedError();
     }
 
     const openShift = await this.workShiftsRepository.findOpenByCashRegisterId(
       request.cashRegisterId,
-    )
+    );
 
     if (openShift) {
-      return err(new WorkShiftStillOpenError())
+      throw new WorkShiftStillOpenError();
     }
 
     await this.cashRegistersRepository.updateStatus(
       request.cashRegisterId,
-      'CLOSED',
+      CashRegisterStatus.CLOSED,
       cashRegister.openedAt ?? null,
       new Date(),
-    )
+    );
 
-    return ok({ cashRegisterId: request.cashRegisterId })
+    return { cashRegisterId: request.cashRegisterId };
   }
 }
