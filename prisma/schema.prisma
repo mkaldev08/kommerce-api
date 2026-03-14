@@ -164,6 +164,7 @@ model BusinessUnit {
 
   cash_registers CashRegister[]
   invoices       Invoice[]
+  students       Student[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -428,18 +429,25 @@ model WorkShift {
 }
 
 model Student {
-  id         String  @id @default(uuid())
-  first_name String
-  last_name  String
-  email      String  @unique
-  phone      String?
+  id                    String  @id @default(uuid())
+  first_name            String
+  last_name             String
+  email                 String? @unique
+  phone                 String?
+  guardian_name         String?
+  guardian_phone_number String?
+  notes                 String?
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
 
   enrollments Enrollment[]
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  @@unique([first_name, last_name])
+  @@unique([first_name, last_name, business_unit_id])
+  @@index([business_unit_id])
   @@map("students")
 }
 

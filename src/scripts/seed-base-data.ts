@@ -1,5 +1,8 @@
+import "dotenv/config";
 import { randomUUID } from "node:crypto";
+import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { fileURLToPath } from "node:url";
 
 const LUANDA_MUNICIPALITIES = [
   "Cazenga",
@@ -31,13 +34,23 @@ function resolveDatabasePath(databaseUrl: string): string {
 }
 
 async function runSeedBaseData(): Promise<void> {
+  const scriptDir = dirname(fileURLToPath(import.meta.url));
+  const backendRoot = resolve(scriptDir, "../..");
+  const fallbackDatabaseUrl = `file:${resolve(backendRoot, "db", "dev.db")}`;
   const cliDatabaseArg = process.argv[2];
   const databaseUrl =
-    process.env.DATABASE_URL ?? process.env.database_url ?? cliDatabaseArg;
+    process.env.DATABASE_URL ??
+    process.env.database_url ??
+    cliDatabaseArg ??
+    fallbackDatabaseUrl;
 
-  if (!databaseUrl) {
-    throw new Error(
-      "[seed] DATABASE_URL is not defined. Set DATABASE_URL=file:/absolute/path/to/kommerce.db or pass it as first argument.",
+  if (
+    !process.env.DATABASE_URL &&
+    !process.env.database_url &&
+    !cliDatabaseArg
+  ) {
+    console.log(
+      `[seed] DATABASE_URL not provided. Using default: ${databaseUrl}`,
     );
   }
 

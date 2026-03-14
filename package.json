@@ -7,6 +7,8 @@
     "dev": "tsx watch --env-file=.env src/server.ts",
     "start": "node build/server.js",
     "build": "tsup --config tsup.config.ts && prisma generate && node scripts/prepare-runtime-deps.cjs && node -e \"const fs=require('fs');fs.writeFileSync('build/package.json', JSON.stringify({type:'module'}, null, 2));\"",
+    "seed": "pnpm exec prisma db seed",
+    "seed:base": "pnpm exec prisma migrate deploy --schema prisma/schema.prisma && pnpm exec tsx src/scripts/seed-base-data.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -27,6 +29,7 @@
     "bcryptjs": "3.0.3",
     "dotenv": "17.2.3",
     "fastify": "5.6.2",
+    "puppeteer": "24.38.0",
     "uuidv7": "1.1.0",
     "zod": "4.1.13"
   },

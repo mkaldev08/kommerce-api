@@ -10,16 +10,21 @@ import { FindCompaniesByOwnerId } from "./controllers/find-companies-by-owner-id
 import { FindCompanyById } from "./controllers/find-company-by-id-controller";
 import { FindOneCompanyByOwnerId } from "./controllers/find-one-company-by-owner-id-controller";
 import { FindCustomerByIdController } from "./controllers/find-customer-by-id-controller";
+import { FindStudentByIdController } from "./controllers/find-student-by-id-controller";
 import { GetAllProvinces } from "./controllers/get-all-provinces-controller";
 import { GetProductByIdController } from "./controllers/get-product-by-id-controller";
 import { GetBusinessUnitByIdController } from "./controllers/get-business-unit-by-id-controller";
 import { GetBusinessUnitsByCompanyIdController } from "./controllers/get-business-units-by-company-id-controller";
 import { GetMunicipalitiesByProvinceId } from "./controllers/get-municipalities-by-province-id-controller";
+import { CreateStudentController } from "./controllers/create-student-controller";
+import { DeleteStudentController } from "./controllers/delete-student-controller";
 import { ListCategoriesController } from "./controllers/list-categories-controller";
 import { ListProductsController } from "./controllers/list-products-controller";
 import { ListCustomersController } from "./controllers/list-customers-controller";
+import { ListStudentsController } from "./controllers/list-students-controller";
 import { logoutUser } from "./controllers/logout-controller";
 import { registerUser } from "./controllers/register-user-controller";
+import { UpdateStudentController } from "./controllers/update-student-controller";
 import { UpdateProductController } from "./controllers/update-product-controller";
 import { UpdateCustomerController } from "./controllers/update-customer-controller";
 import { createSaleController } from "./controllers/create-sale-controller";
@@ -34,6 +39,21 @@ import { createCashMovementController } from "./controllers/create-cash-movement
 import { getOpenCashRegisterController } from "./controllers/get-open-cash-register-controller";
 import { getOpenWorkShiftController } from "./controllers/get-open-work-shift-controller";
 import { listCashMovementsController } from "./controllers/list-cash-movements-controller";
+import { exportInvoicePdfController } from "./controllers/export-invoice-pdf-controller";
+import { ListBeltsController } from "./controllers/list-belts-controller";
+import { CreateBeltController } from "./controllers/create-belt-controller";
+import { ListSchoolYearsController } from "./controllers/list-school-years-controller";
+import { CreateSchoolYearController } from "./controllers/create-school-year-controller";
+import { ListInstructorsController } from "./controllers/list-instructors-controller";
+import { CreateInstructorController } from "./controllers/create-instructor-controller";
+import { ListClassesController } from "./controllers/list-classes-controller";
+import { CreateClassController } from "./controllers/create-class-controller";
+import { ListEnrollmentsController } from "./controllers/list-enrollments-controller";
+import { CreateEnrollmentController } from "./controllers/create-enrollment-controller";
+import { UpdateEnrollmentController } from "./controllers/update-enrollment-controller";
+import { DeleteEnrollmentController } from "./controllers/delete-enrollment-controller";
+import { exportEnrollmentPdfController } from "./controllers/export-enrollment-pdf-controller";
+import { RegisterEnrollmentPaymentController } from "./controllers/register-enrollment-payment-controller";
 
 export function appRoutes(app: FastifyInstance) {
   app.post("/companies/:ownerId", CreateCompany);
@@ -70,10 +90,63 @@ export function appRoutes(app: FastifyInstance) {
   app.patch("/customers/:id", UpdateCustomerController);
   app.delete("/customers/:id", DeleteCustomerController);
 
+  app.get("/business-units/:businessUnitId/students", ListStudentsController);
+  app.get(
+    "/business-units/:businessUnitId/students/:id",
+    FindStudentByIdController,
+  );
+  app.post("/business-units/:businessUnitId/students", CreateStudentController);
+  app.patch(
+    "/business-units/:businessUnitId/students/:id",
+    UpdateStudentController,
+  );
+  app.delete(
+    "/business-units/:businessUnitId/students/:id",
+    DeleteStudentController,
+  );
+
+  app.get("/academy/belts", ListBeltsController);
+  app.post("/academy/belts", CreateBeltController);
+
+  app.get("/academy/school-years", ListSchoolYearsController);
+  app.post("/academy/school-years", CreateSchoolYearController);
+
+  app.get("/academy/instructors", ListInstructorsController);
+  app.post("/academy/instructors", CreateInstructorController);
+
+  app.get("/business-units/:businessUnitId/classes", ListClassesController);
+  app.post("/academy/classes", CreateClassController);
+
+  app.get(
+    "/business-units/:businessUnitId/enrollments",
+    ListEnrollmentsController,
+  );
+  app.post(
+    "/business-units/:businessUnitId/enrollments",
+    CreateEnrollmentController,
+  );
+  app.patch(
+    "/business-units/:businessUnitId/enrollments/:id",
+    UpdateEnrollmentController,
+  );
+  app.delete(
+    "/business-units/:businessUnitId/enrollments/:id",
+    DeleteEnrollmentController,
+  );
+  app.get(
+    "/business-units/:businessUnitId/enrollments/:id/report/pdf",
+    exportEnrollmentPdfController,
+  );
+  app.post(
+    "/business-units/:businessUnitId/enrollments/:id/payments",
+    RegisterEnrollmentPaymentController,
+  );
+
   // Sales/Invoice routes
   app.post("/sales", createSaleController);
   app.get("/sales", listSalesController);
   app.get("/sales/:id", getSaleController);
+  app.get("/sales/:id/report/pdf", exportInvoicePdfController);
   app.patch("/sales/:id/status", updateSaleStatusController);
 
   // Cash flow routes
