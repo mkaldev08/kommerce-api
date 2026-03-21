@@ -6,7 +6,7 @@ import { PuppeteerInvoicePdfGenerator } from "@/services/generate-pdf";
 import { ExportInvoicePdfUseCase } from "@/use-cases/export-invoice-pdf-use-case";
 
 const exportInvoicePdfParamsSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
 });
 
 export async function exportInvoicePdfController(

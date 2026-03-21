@@ -58,6 +58,7 @@ import { getAppUpdateAssetController } from "./controllers/get-app-update-asset-
 import { uploadCompanyLogoController } from "./controllers/upload-company-logo-controller";
 import { getCompanyLogoController } from "./controllers/get-company-logo-controller";
 import { UpdateCompanyController } from "./controllers/update-company-controller";
+import { getDashboardMetricsController } from "./controllers/get-dashboard-metrics-controller";
 
 export function appRoutes(app: FastifyInstance) {
   app.post("/companies/:ownerId", CreateCompany);
@@ -76,6 +77,10 @@ export function appRoutes(app: FastifyInstance) {
   );
 
   app.get("/business-units/:businessUnitId", GetBusinessUnitByIdController);
+  app.get(
+    "/business-units/:businessUnitId/dashboard",
+    getDashboardMetricsController,
+  );
 
   app.get("/provinces", GetAllProvinces);
   app.get(

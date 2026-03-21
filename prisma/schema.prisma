@@ -440,6 +440,7 @@ model Student {
   guardian_name         String?
   guardian_phone_number String?
   notes                 String?
+  student_number        String  @unique
 
   business_unit_id String
   business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
@@ -451,6 +452,7 @@ model Student {
 
   @@unique([first_name, last_name, business_unit_id])
   @@index([business_unit_id])
+  @@index([student_number])
   @@map("students")
 }
 
