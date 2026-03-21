@@ -1,9 +1,22 @@
 import type { Company } from "generated/prisma/client";
 import type { CompanyUncheckedCreateInput } from "generated/prisma/models";
 import { prisma } from "@/lib/prisma";
-import type { CompaniesRepository } from "../companies-repository";
+import type {
+  CompaniesRepository,
+  UpdateCompanyInput,
+} from "../companies-repository";
 
 export class PrismaCompaniesRepository implements CompaniesRepository {
+  async findByNif(nif: string) {
+    const company = await prisma.company.findUnique({
+      where: {
+        nif,
+      },
+    });
+
+    return company;
+  }
+
   async findById(companyId: string) {
     const company = await prisma.company.findUnique({
       where: {
@@ -20,6 +33,34 @@ export class PrismaCompaniesRepository implements CompaniesRepository {
 
     return company;
   }
+
+  async update(companyId: string, data: UpdateCompanyInput): Promise<Company> {
+    const company = await prisma.company.update({
+      where: {
+        id: companyId,
+      },
+      data,
+    });
+
+    return company;
+  }
+
+  async updateLogo(
+    companyId: string,
+    imageData: string,
+    imageType: string,
+  ): Promise<void> {
+    await prisma.company.update({
+      where: {
+        id: companyId,
+      },
+      data: {
+        image_data: imageData,
+        image_type: imageType,
+      },
+    });
+  }
+
   async findOneByOwnerId(ownerId: string) {
     const company = await prisma.company.findFirst({
       where: {

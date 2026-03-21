@@ -11,8 +11,9 @@ export async function CreateCompany(
   const createCompanyBodySchema = z.object({
     trade_name: z.string(),
     commercial_registry: z.string().trim().min(9),
-    document_code: z.string().trim().min(3).optional(),
-    nif: z.string().trim().min(3).optional(),
+    document_code_prefix: z.string().trim().min(2).optional(),
+    document_code: z.string().trim().min(2).optional(),
+    nif: z.string().trim().min(9),
     legal_name: z.string(),
     email: z.email().trim(),
     phone_number: z.string().trim().min(9),
@@ -32,10 +33,11 @@ export async function CreateCompany(
 
   const { ownerId } = createCompanyParamsSchema.parse(request.params);
   const companyData = createCompanyBodySchema.parse(request.body);
-  const documentCode = companyData.document_code ?? companyData.nif;
+  const documentCodePrefix =
+    companyData.document_code_prefix ?? companyData.document_code;
 
-  if (!documentCode) {
-    reply.status(400).send({ message: "NIF (document_code) é obrigatório" });
+  if (!documentCodePrefix) {
+    reply.status(400).send({ message: "document_code_prefix é obrigatório" });
     return;
   }
 
@@ -44,7 +46,7 @@ export async function CreateCompany(
 
     await createCompanyUseCase.execute({
       ...companyData,
-      document_code: documentCode,
+      document_code_prefix: documentCodePrefix,
       owner_id: ownerId,
     });
   } catch (err) {

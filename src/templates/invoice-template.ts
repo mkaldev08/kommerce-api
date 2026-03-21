@@ -19,7 +19,8 @@ export interface InvoiceTemplateData {
   companyAddress: string;
   companyPhone: string;
   companyEmail: string;
-  companyDocumentCode: string;
+  companyNif?: string | null;
+  companyLogoDataUrl?: string;
   customerName: string;
   customerAddress: string;
   customerNif: string;
@@ -43,8 +44,8 @@ const PERCENT_FORMATTER = new Intl.NumberFormat("pt-PT", {
   maximumFractionDigits: 2,
 });
 
-const escapeHtml = (value: string): string =>
-  value
+const escapeHtml = (value: string | number | null | undefined): string =>
+  String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -122,7 +123,10 @@ export function renderInvoiceTemplate(data: InvoiceTemplateData): string {
   const safeCompanyAddress = escapeHtml(data.companyAddress);
   const safeCompanyPhone = escapeHtml(data.companyPhone);
   const safeCompanyEmail = escapeHtml(data.companyEmail);
-  const safeCompanyDocumentCode = escapeHtml(data.companyDocumentCode);
+  const safeCompanyNif = escapeHtml(data.companyNif);
+  const safeCompanyLogoDataUrl = data.companyLogoDataUrl
+    ? escapeHtml(data.companyLogoDataUrl)
+    : "";
   const safeCustomerName = escapeHtml(data.customerName);
   const safeCustomerAddress = escapeHtml(data.customerAddress);
   const safeCustomerNif = escapeHtml(data.customerNif);
@@ -310,6 +314,7 @@ export function renderInvoiceTemplate(data: InvoiceTemplateData): string {
             text-align: center;
             font-size: 10px;
             padding-top: 8px;
+            align-self: end;
           }
         </style>
       </head>
@@ -317,7 +322,9 @@ export function renderInvoiceTemplate(data: InvoiceTemplateData): string {
         <main class="sheet">
           <section class="row">
             <div class="col" style="width: 22%;">
-              <div style="width: 100px; height: 80px; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; text-align: center;">LOGO</div>
+              <div style="width: 100px; height: 80px; border: 1px solid #d1d5db; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                ${safeCompanyLogoDataUrl ? `<img src="${safeCompanyLogoDataUrl}" alt="Logo da empresa" style="width: 100%; height: 100%; object-fit: contain;" />` : '<span style="font-size:10px; font-weight:700; text-align:center;">LOGO</span>'}
+              </div>
             </div>
             <div class="col" style="width: 46%;"></div>
             <div class="col" style="width: 32%; text-align: right;">
@@ -333,7 +340,7 @@ export function renderInvoiceTemplate(data: InvoiceTemplateData): string {
               <p class="meta-line">${safeCompanyAddress}</p>
               <p class="meta-line">Telefone: ${safeCompanyPhone}</p>
               <p class="meta-line">${safeCompanyEmail}</p>
-              <p class="meta-line">NIF: ${safeCompanyDocumentCode}</p>
+              <p class="meta-line">NIF: ${safeCompanyNif}</p>
             </div>
 
             <div class="col" style="width: 50%; padding-left: 8px;">

@@ -7,8 +7,10 @@ import type {
 export interface InvoiceReportCompanyData {
   legalName: string;
   tradeName: string;
-  documentCode: string;
-  nif: string;
+  nif?: string | null;
+  documentCodePrefix?: string | null;
+  imageData?: string | null;
+  imageType?: string | null;
   email: string;
   phoneNumber: string;
   streetAddress: string;

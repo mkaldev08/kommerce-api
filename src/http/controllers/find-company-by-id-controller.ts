@@ -20,12 +20,7 @@ export async function FindCompanyById(
       companyId,
     });
 
-    return reply.status(200).send({
-      company: {
-        ...company,
-        nif: company.document_code,
-      },
-    });
+    return reply.status(200).send({ company });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return reply.status(400).send({ message: "Invalid request data" });

@@ -125,9 +125,11 @@ model Company {
   id                   String    @id @default(uuid())
   legal_name           String
   trade_name           String
-  nif                  String    @unique @default("")
+  nif                  String?   @unique
   commercial_registry  String    @unique
-  document_code_prefix String
+  document_code_prefix String    @map("document_code")
+  image_data           String?
+  image_type           String?
   email                String    @unique
   phone_number         String    @unique
   vat_regime           VATRegime

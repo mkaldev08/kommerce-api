@@ -11,12 +11,31 @@ interface ExportInvoicePdfUseCaseResponse {
   fileContent: Buffer;
 }
 
+const INVOICE_TYPE_FILE_LABEL: Record<string, string> = {
+  INVOICE: "Fatura",
+  INVOICE_RECEIPT: "Fatura_Recibo",
+  CREDIT_NOTE: "Nota_de_Credito",
+  DEBIT_NOTE: "Nota_de_Debito",
+};
+
 const sanitizeFileNamePart = (value: string): string =>
   value
     .trim()
     .replace(/[^a-zA-Z0-9-_.]/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
+
+const sanitizeOptionalFileNamePart = (
+  value: string | null | undefined,
+  fallback: string,
+): string => {
+  if (!value) {
+    return fallback;
+  }
+
+  const sanitized = sanitizeFileNamePart(value);
+  return sanitized || fallback;
+};
 
 export class ExportInvoicePdfUseCase {
   constructor(
@@ -36,15 +55,18 @@ export class ExportInvoicePdfUseCase {
     }
 
     const fileContent = await this.invoicePdfGenerator.generate(invoiceReport);
-    const number = sanitizeFileNamePart(invoiceReport.number);
-    const series = sanitizeFileNamePart(invoiceReport.series);
-    const documentCode = sanitizeFileNamePart(
-      invoiceReport.company.documentCode,
+    const invoiceTypeLabel = sanitizeOptionalFileNamePart(
+      INVOICE_TYPE_FILE_LABEL[invoiceReport.type] ?? invoiceReport.type,
+      "Fatura",
     );
-    const documentIdentifier = `${documentCode}${series}-${number}`;
+    const customerName = sanitizeOptionalFileNamePart(
+      invoiceReport.customer?.name,
+      "Consumidor_Final",
+    );
+    const timestamp = Date.now();
 
     return {
-      fileName: `invoice-${documentIdentifier}.pdf`,
+      fileName: `${invoiceTypeLabel}-${customerName}-${timestamp}.pdf`,
       fileContent,
     };
   }

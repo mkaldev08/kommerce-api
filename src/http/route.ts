@@ -55,10 +55,16 @@ import { DeleteEnrollmentController } from "./controllers/delete-enrollment-cont
 import { exportEnrollmentPdfController } from "./controllers/export-enrollment-pdf-controller";
 import { RegisterEnrollmentPaymentController } from "./controllers/register-enrollment-payment-controller";
 import { getAppUpdateAssetController } from "./controllers/get-app-update-asset-controller";
+import { uploadCompanyLogoController } from "./controllers/upload-company-logo-controller";
+import { getCompanyLogoController } from "./controllers/get-company-logo-controller";
+import { UpdateCompanyController } from "./controllers/update-company-controller";
 
 export function appRoutes(app: FastifyInstance) {
   app.post("/companies/:ownerId", CreateCompany);
   app.get("/companies/:companyId", FindCompanyById);
+  app.patch("/companies/:companyId", UpdateCompanyController);
+  app.patch("/companies/:companyId/logo", uploadCompanyLogoController);
+  app.get("/companies/:companyId/logo", getCompanyLogoController);
   app.get("/companies/owner/:ownerId", FindCompaniesByOwnerId);
 
   app.get("/owner/:ownerId/company", FindOneCompanyByOwnerId);

@@ -84,11 +84,11 @@ const PAYMENT_METHOD_LABEL: Partial<
 };
 
 const formatDocumentIdentifier = (data: InvoiceReportData): string => {
-  const documentCode = data.company.documentCode.trim();
+  const documentCodePrefix = (data.company.documentCodePrefix ?? "DOC").trim();
   const series = data.series.trim();
   const number = data.number.trim();
 
-  return `${documentCode}${series}/${number}`;
+  return `${documentCodePrefix}${series}/${number}`;
 };
 
 const buildQrCodePayload = (data: InvoiceReportData): string => {
@@ -101,7 +101,7 @@ const buildQrCodePayload = (data: InvoiceReportData): string => {
     `DOC=${INVOICE_TYPE_CODE[data.type]} ${documentIdentifier}`,
     `DATA=${DATE_FORMATTER.format(data.issueDate)}`,
     `EMITENTE=${data.company.tradeName || data.company.legalName}`,
-    `NIF=${data.company.nif}`,
+    `NIF=${data.company.nif || "N/D"}`,
     `CLIENTE=${customer}`,
     `NIF_CLIENTE=${nif}`,
     `TOTAL_AOA=${total}`,
@@ -125,7 +125,11 @@ export class PuppeteerInvoicePdfGenerator implements InvoicePdfGenerator {
       companyAddress: data.company.streetAddress,
       companyPhone: data.company.phoneNumber,
       companyEmail: data.company.email,
-      companyDocumentCode: data.company.documentCode,
+      companyNif: data.company.nif ?? "N/D",
+      companyLogoDataUrl:
+        data.company.imageData && data.company.imageType
+          ? `data:${data.company.imageType};base64,${data.company.imageData}`
+          : undefined,
       customerName: data.customer?.name ?? "Consumidor Final",
       customerAddress: data.customer?.streetAddress ?? "Sem morada",
       customerNif: data.customer?.nif ?? "999999999",

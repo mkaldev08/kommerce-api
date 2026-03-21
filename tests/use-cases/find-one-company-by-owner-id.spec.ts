@@ -29,8 +29,9 @@ describe("Find One Company By Owner ID Use Case", () => {
     await companiesRepository.create({
       id: "company-id",
       trade_name: "Test Company",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Test Social Reason",
       owner_id: "user-id",
       email: "company@example.com",

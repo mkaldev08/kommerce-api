@@ -45,8 +45,10 @@ export class PrismaInvoiceReportRepository implements InvoiceReportRepository {
       company: {
         legalName: invoice.company.legal_name,
         tradeName: invoice.company.trade_name,
-        documentCode: invoice.company.document_code,
-        nif: invoice.company.document_code,
+        nif: invoice.company.nif ?? null,
+        documentCodePrefix: invoice.company.document_code_prefix ?? null,
+        imageData: invoice.company.image_data,
+        imageType: invoice.company.image_type,
         email: invoice.company.email,
         phoneNumber: invoice.company.phone_number,
         streetAddress: invoice.company.street_address,

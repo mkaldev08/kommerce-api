@@ -10,7 +10,7 @@ export interface SaleData {
   number: string;
   series: string;
   type: string;
-  companyDocumentCode?: string;
+  companyDocumentCodePrefix?: string;
   issueDate: Date;
   taxableAmount: number;
   vatAmount: number;
@@ -58,7 +58,7 @@ export class ListInvoicesUseCase {
         number: invoice.number,
         series: invoice.series,
         type: invoice.type,
-        companyDocumentCode: invoice.companyDocumentCode,
+        companyDocumentCodePrefix: invoice.companyDocumentCodePrefix,
         issueDate: invoice.issueDate,
         taxableAmount: invoice.taxableAmount,
         vatAmount: invoice.vatAmount,

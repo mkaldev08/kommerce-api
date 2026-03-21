@@ -43,7 +43,7 @@ export async function listSalesController(
           number: invoice.number,
           series: invoice.series,
           type: invoice.type,
-          companyDocumentCode: invoice.companyDocumentCode,
+          companyDocumentCodePrefix: invoice.companyDocumentCodePrefix,
           businessUnitId: invoice.businessUnitId,
           customerId: invoice.customerId,
           totalAmount: invoice.totalAmount,

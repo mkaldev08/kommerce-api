@@ -29,8 +29,9 @@ describe("Find Companies By Owner ID Use Case", () => {
     await companiesRepository.create({
       id: "company-id-1",
       trade_name: "Test Company 1",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Test Social Reason 1",
       owner_id: "user-id",
       email: "company1@example.com",
@@ -42,8 +43,9 @@ describe("Find Companies By Owner ID Use Case", () => {
     await companiesRepository.create({
       id: "company-id-2",
       trade_name: "Test Company 2",
+      nif: "5001743121",
       commercial_registry: "987654321",
-      document_code: "DOC-456",
+      document_code_prefix: "SCL",
       legal_name: "Test Social Reason 2",
       owner_id: "user-id",
       email: "company2@example.com",

@@ -44,9 +44,11 @@ class InMemoryInventoryRepository implements InventoryRepository {
       businessUnitId: data.businessUnitId,
       name: data.name,
       description: data.description,
+      category: data.category ?? "Geral",
       price: data.price,
       vat_rate: data.vat_rate,
       is_service: data.is_service,
+      is_active: data.is_active ?? true,
       stock: data.stock,
       location: data.location,
       created_at: new Date(),
@@ -227,6 +229,62 @@ describe("Inventory Product Flow Use Cases", () => {
 
     expect(updated.stock).toBe(12);
     expect(updated.location).toBe("A2");
+  });
+
+  it("should inactivate product", async () => {
+    const { product: created } = await createUseCase.execute({
+      businessUnitId,
+      name: "Produto 3A",
+      description: "Descrição 3A",
+      price: 320,
+      vat_rate: 14,
+      is_service: false,
+      stock: 5,
+      location: "A3",
+    });
+
+    const { product: updated } = await updateUseCase.execute({
+      productId: created.id,
+      input: {
+        businessUnitId,
+        is_active: false,
+      },
+    });
+
+    expect(updated.is_active).toBe(false);
+  });
+
+  it("should increase and decrease stock", async () => {
+    const { product: created } = await createUseCase.execute({
+      businessUnitId,
+      name: "Produto 3B",
+      description: "Descrição 3B",
+      price: 330,
+      vat_rate: 14,
+      is_service: false,
+      stock: 10,
+      location: "B1",
+    });
+
+    const { product: increased } = await updateUseCase.execute({
+      productId: created.id,
+      input: {
+        businessUnitId,
+        stock: created.stock + 1,
+      },
+    });
+
+    expect(increased.stock).toBe(11);
+
+    const { product: decreased } = await updateUseCase.execute({
+      productId: created.id,
+      input: {
+        businessUnitId,
+        stock: increased.stock - 1,
+      },
+    });
+
+    expect(decreased.stock).toBe(10);
   });
 
   it("should delete a product", async () => {

@@ -35,8 +35,9 @@ describe("Create Company Use Case", () => {
   it("Should be able to create a company", async () => {
     const { company } = await sut.execute({
       trade_name: "Company Name",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Social Reason",
       owner_id: "user-id",
       email: "company@example.com",
@@ -51,8 +52,9 @@ describe("Create Company Use Case", () => {
   it("should create default business units for a new company", async () => {
     const { company } = await sut.execute({
       trade_name: "Company Name",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Social Reason",
       owner_id: "user-id",
       email: "company@example.com",
@@ -75,8 +77,9 @@ describe("Create Company Use Case", () => {
     await expect(() =>
       sut.execute({
         trade_name: "Company Name",
+        nif: "5001743120",
         commercial_registry: "123456789",
-        document_code: "DOC-123",
+        document_code_prefix: "SCL",
         legal_name: "Social Reason",
         owner_id: "non-existing-user-id",
         email: "company@example.com",
@@ -90,8 +93,9 @@ describe("Create Company Use Case", () => {
   it("should not be able to create a company with a duplicated commercial registry", async () => {
     await sut.execute({
       trade_name: "Company Name",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Social Reason",
       owner_id: "user-id",
       email: "company@example.com",
@@ -103,8 +107,9 @@ describe("Create Company Use Case", () => {
     await expect(() =>
       sut.execute({
         trade_name: "Another Company",
+        nif: "5001743121",
         commercial_registry: "123456789",
-        document_code: "DOC-456",
+        document_code_prefix: "SCL",
         legal_name: "Social Reason",
         owner_id: "user-id",
         email: "other@example.com",
@@ -118,8 +123,9 @@ describe("Create Company Use Case", () => {
   it("should not be able to create a company with a duplicated email", async () => {
     await sut.execute({
       trade_name: "Company Name",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Social Reason",
       owner_id: "user-id",
       email: "company@example.com",
@@ -131,8 +137,9 @@ describe("Create Company Use Case", () => {
     await expect(() =>
       sut.execute({
         trade_name: "Another Company",
+        nif: "5001743121",
         commercial_registry: "987654321",
-        document_code: "DOC-456",
+        document_code_prefix: "SCL",
         legal_name: "Social Reason",
         owner_id: "user-id",
         email: "company@example.com",
@@ -146,8 +153,9 @@ describe("Create Company Use Case", () => {
   it("should not be able to create a company with a duplicated phone number", async () => {
     await sut.execute({
       trade_name: "Company Name",
+      nif: "5001743120",
       commercial_registry: "123456789",
-      document_code: "DOC-123",
+      document_code_prefix: "SCL",
       legal_name: "Social Reason",
       owner_id: "user-id",
       email: "company@example.com",
@@ -159,8 +167,9 @@ describe("Create Company Use Case", () => {
     await expect(() =>
       sut.execute({
         trade_name: "Another Company",
+        nif: "5001743121",
         commercial_registry: "987654321",
-        document_code: "DOC-456",
+        document_code_prefix: "SCL",
         legal_name: "Social Reason",
         owner_id: "user-id",
         email: "other@example.com",
