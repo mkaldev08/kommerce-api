@@ -64,6 +64,7 @@ describe("Student CRUD Use Cases", () => {
     });
 
     expect(createdStudent.id).toEqual(expect.any(String));
+    expect(createdStudent.studentNumber).toMatch(/^[0-9]{4}-M-S-[0-9]{4}$/);
 
     const { students } = await listStudentsUseCase.execute({
       businessUnitId: academyBusinessUnitId,
@@ -77,6 +78,7 @@ describe("Student CRUD Use Cases", () => {
     });
 
     expect(foundStudent.name).toBe("Maria Silva");
+    expect(foundStudent.studentNumber).toBe(createdStudent.studentNumber);
 
     const { student: updatedStudent } = await updateStudentUseCase.execute({
       id: createdStudent.id,
@@ -85,15 +87,18 @@ describe("Student CRUD Use Cases", () => {
     });
 
     expect(updatedStudent.notes).toBe("Turma da tarde");
+    expect(updatedStudent.studentNumber).toBe(createdStudent.studentNumber);
 
     await deleteStudentUseCase.execute({
       id: createdStudent.id,
       businessUnitId: academyBusinessUnitId,
     });
 
-    const { students: studentsAfterDelete } = await listStudentsUseCase.execute({
-      businessUnitId: academyBusinessUnitId,
-    });
+    const { students: studentsAfterDelete } = await listStudentsUseCase.execute(
+      {
+        businessUnitId: academyBusinessUnitId,
+      },
+    );
 
     expect(studentsAfterDelete).toHaveLength(0);
   });
@@ -112,5 +117,21 @@ describe("Student CRUD Use Cases", () => {
         businessUnitId: store.id,
       }),
     ).rejects.toBeInstanceOf(BusinessUnitNotAcademyError);
+  });
+
+  it("should generate unique student numbers", async () => {
+    const { student: firstStudent } = await createStudentUseCase.execute({
+      name: "Maria Silva",
+      businessUnitId: academyBusinessUnitId,
+    });
+
+    const { student: secondStudent } = await createStudentUseCase.execute({
+      name: "Maria Silva",
+      businessUnitId: academyBusinessUnitId,
+    });
+
+    expect(firstStudent.studentNumber).not.toBe(secondStudent.studentNumber);
+    expect(firstStudent.studentNumber).toMatch(/^[0-9]{4}-M-S-[0-9]{4}$/);
+    expect(secondStudent.studentNumber).toMatch(/^[0-9]{4}-M-S-[0-9]{4}$/);
   });
 });

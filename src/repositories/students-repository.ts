@@ -1,5 +1,6 @@
 export interface StudentData {
   id: string;
+  studentNumber: string;
   name: string;
   email?: string | null;
   phoneNumber?: string | null;

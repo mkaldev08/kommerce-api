@@ -2,6 +2,7 @@ export interface EnrollmentReportData {
   id: string;
   businessUnitId: string;
   businessUnitName: string;
+  studentNumber: string;
   studentName: string;
   studentPhone?: string | null;
   className: string;
@@ -13,5 +14,7 @@ export interface EnrollmentReportData {
 }
 
 export interface EnrollmentReportRepository {
-  findByEnrollmentId(enrollmentId: string): Promise<EnrollmentReportData | null>;
+  findByEnrollmentId(
+    enrollmentId: string,
+  ): Promise<EnrollmentReportData | null>;
 }

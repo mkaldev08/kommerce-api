@@ -4,26 +4,49 @@ import type {
   StudentData,
   StudentsRepository,
 } from "../students-repository";
-import type { Student } from "../../../generated/prisma/client";
+import { Prisma, type Student } from "../../../generated/prisma/client";
 
 export class PrismaStudentsRepository implements StudentsRepository {
   async create(data: CreateStudentInput): Promise<StudentData> {
     const { firstName, lastName } = this.splitStudentName(data.name);
+    const maxAttempts = 20;
 
-    const student = await prisma.student.create({
-      data: {
-        first_name: firstName,
-        last_name: lastName,
-        email: data.email || null,
-        phone: data.phoneNumber || null,
-        guardian_name: data.guardianName || null,
-        guardian_phone_number: data.guardianPhoneNumber || null,
-        notes: data.notes || null,
-        business_unit_id: data.businessUnitId,
-      },
-    });
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const studentNumber = await this.generateUniqueStudentNumber(
+        firstName,
+        lastName,
+      );
 
-    return this.toStudentData(student);
+      try {
+        const student = await prisma.student.create({
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            student_number: studentNumber,
+            email: data.email || null,
+            phone: data.phoneNumber || null,
+            guardian_name: data.guardianName || null,
+            guardian_phone_number: data.guardianPhoneNumber || null,
+            notes: data.notes || null,
+            business_unit_id: data.businessUnitId,
+          },
+        });
+
+        return this.toStudentData(student);
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === "P2002" &&
+          this.isStudentNumberUniqueConflict(error)
+        ) {
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    throw new Error("Could not generate unique student number");
   }
 
   async findById(id: string): Promise<StudentData | null> {
@@ -82,6 +105,7 @@ export class PrismaStudentsRepository implements StudentsRepository {
   private toStudentData(student: Student): StudentData {
     return {
       id: student.id,
+      studentNumber: student.student_number,
       name: this.combineStudentName(student.first_name, student.last_name),
       email: student.email,
       phoneNumber: student.phone,
@@ -113,5 +137,53 @@ export class PrismaStudentsRepository implements StudentsRepository {
     }
 
     return `${firstName} ${lastName}`;
+  }
+
+  private async generateUniqueStudentNumber(
+    firstName: string,
+    lastName: string,
+  ): Promise<string> {
+    const entryYear = new Date().getFullYear();
+    const firstInitial = this.extractInitial(firstName);
+    const surnameInitial = this.extractInitial(lastName);
+    const maxAttempts = 20;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      const randomSuffix = this.generateFourDigitRandom();
+      const candidate = `${entryYear}-${firstInitial}-${surnameInitial}-${randomSuffix}`;
+      const existing = await prisma.student.findUnique({
+        where: { student_number: candidate },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        return candidate;
+      }
+    }
+
+    throw new Error("Could not generate unique student number");
+  }
+
+  private extractInitial(value: string): string {
+    const normalized = value.trim();
+    const firstCharacter = normalized.charAt(0).toUpperCase();
+
+    return firstCharacter || "X";
+  }
+
+  private generateFourDigitRandom(): string {
+    return String(Math.floor(1000 + Math.random() * 9000));
+  }
+
+  private isStudentNumberUniqueConflict(
+    error: Prisma.PrismaClientKnownRequestError,
+  ): boolean {
+    const target = error.meta?.target;
+
+    if (Array.isArray(target)) {
+      return target.includes("student_number");
+    }
+
+    return String(target ?? "").includes("student_number");
   }
 }

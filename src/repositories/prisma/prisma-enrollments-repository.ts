@@ -14,6 +14,7 @@ type EnrollmentWithRelations = {
   created_at: Date;
   updated_at: Date;
   student: {
+    student_number: string;
     first_name: string;
     last_name: string;
     phone: string | null;
@@ -86,6 +87,7 @@ export class PrismaEnrollmentsRepository implements EnrollmentsRepository {
     return {
       student: {
         select: {
+          student_number: true,
           first_name: true,
           last_name: true,
           phone: true,
@@ -111,6 +113,7 @@ export class PrismaEnrollmentsRepository implements EnrollmentsRepository {
     return {
       id: enrollment.id,
       studentId: enrollment.student_id,
+      studentNumber: enrollment.student.student_number,
       studentName:
         `${enrollment.student.first_name} ${enrollment.student.last_name}`.trim(),
       studentPhone: enrollment.student.phone,

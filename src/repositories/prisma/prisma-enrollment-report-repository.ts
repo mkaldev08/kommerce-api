@@ -4,9 +4,7 @@ import type {
   EnrollmentReportRepository,
 } from "../enrollment-report-repository";
 
-export class PrismaEnrollmentReportRepository
-  implements EnrollmentReportRepository
-{
+export class PrismaEnrollmentReportRepository implements EnrollmentReportRepository {
   async findByEnrollmentId(
     enrollmentId: string,
   ): Promise<EnrollmentReportData | null> {
@@ -35,6 +33,7 @@ export class PrismaEnrollmentReportRepository
       id: enrollment.id,
       businessUnitId: enrollment.student.business_unit_id,
       businessUnitName: enrollment.student.business_unit.name,
+      studentNumber: enrollment.student.student_number,
       studentName:
         `${enrollment.student.first_name} ${enrollment.student.last_name}`.trim(),
       studentPhone: enrollment.student.phone,

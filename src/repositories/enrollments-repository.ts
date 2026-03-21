@@ -1,6 +1,7 @@
 export interface EnrollmentData {
   id: string;
   studentId: string;
+  studentNumber: string;
   studentName: string;
   studentPhone?: string | null;
   classId: string;

@@ -53,7 +53,7 @@ export const updateEnrollmentBodySchema = z.object({
 
 export const enrollmentPaymentBodySchema = z.object({
   cashRegisterId: z.string().uuid(),
-  amount: z.number().positive(),
+  amount: z.number().positive().optional(),
   method: z.nativeEnum(PaymentMethod),
   paymentType: z.nativeEnum(PaymentType),
   paidAt: z.coerce.date().optional(),

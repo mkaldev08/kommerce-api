@@ -3,6 +3,7 @@ import type { EnrollmentsRepository } from "@/repositories/enrollments-repositor
 import type { InvoicesRepository } from "@/repositories/invoices-repository";
 import type { PaymentsRepository } from "@/repositories/payments-repository";
 import type { CashMovementsRepository } from "@/repositories/cash-movements-repository";
+import { prisma } from "@/lib/prisma";
 import { BusinessUnitNotAcademyError } from "@/use-cases/errors/business-unit-not-academy-error";
 import { ResourceNotFoundError } from "@/use-cases/errors/resource-not-found-error";
 import {
@@ -17,7 +18,7 @@ interface RegisterEnrollmentPaymentRequest {
   businessUnitId: string;
   enrollmentId: string;
   cashRegisterId: string;
-  amount: number;
+  amount?: number;
   method: PaymentMethod;
   paymentType: PaymentType;
   paidAt?: Date;
@@ -60,6 +61,7 @@ export class RegisterEnrollmentPaymentUseCase {
       throw new ResourceNotFoundError();
     }
 
+    const resolvedAmount = await this.resolvePaymentAmount(request);
     const paymentDate = request.paidAt ?? new Date();
 
     const invoice = await this.invoicesRepository.create({
@@ -67,9 +69,9 @@ export class RegisterEnrollmentPaymentUseCase {
       series: String(paymentDate.getFullYear()),
       type: InvoiceType.INVOICE_RECEIPT,
       issueDate: paymentDate,
-      taxableAmount: request.amount,
+      taxableAmount: resolvedAmount,
       vatAmount: 0,
-      totalAmount: request.amount,
+      totalAmount: resolvedAmount,
       status: SaleStatus.COMPLETED,
       companyId: businessUnit.company_id,
       businessUnitId: request.businessUnitId,
@@ -78,7 +80,7 @@ export class RegisterEnrollmentPaymentUseCase {
     });
 
     const payment = await this.paymentsRepository.create({
-      amount: request.amount,
+      amount: resolvedAmount,
       method: request.method,
       paymentDate,
       invoiceId: invoice.id,
@@ -89,7 +91,7 @@ export class RegisterEnrollmentPaymentUseCase {
       await this.cashMovementsRepository.create({
         cashRegisterId: request.cashRegisterId,
         type: CashMovementType.ENTRY,
-        amount: request.amount,
+        amount: resolvedAmount,
         description: `Pagamento da inscrição ${enrollment.studentName}`,
         movementDate: paymentDate,
       });
@@ -105,5 +107,46 @@ export class RegisterEnrollmentPaymentUseCase {
     return Math.floor(Math.random() * 1000000)
       .toString()
       .padStart(6, "0");
+  }
+
+  private async resolvePaymentAmount(
+    request: RegisterEnrollmentPaymentRequest,
+  ): Promise<number> {
+    if (request.amount && request.amount > 0) {
+      return request.amount;
+    }
+
+    const enrollmentBelt = await prisma.enrollmentBelt.findFirst({
+      where: { enrollment_id: request.enrollmentId },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (!enrollmentBelt) {
+      throw new ResourceNotFoundError(
+        "Não foi possível calcular o valor automático: inscrição sem faixa atribuída.",
+      );
+    }
+
+    const tuitionFee = await prisma.tuitionFee.findFirst({
+      where: { belt_id: enrollmentBelt.belt_id },
+      orderBy: { created_at: "desc" },
+    });
+
+    if (!tuitionFee) {
+      throw new ResourceNotFoundError(
+        "Não foi possível calcular o valor automático: tabela de propinas não configurada para esta faixa.",
+      );
+    }
+
+    switch (request.paymentType) {
+      case PaymentType.TUITION_FEE:
+        return Number(tuitionFee.fee);
+      case PaymentType.ENROLLMENT_FEE:
+        return Number(tuitionFee.enrollment_fee);
+      case PaymentType.CONFIRMATION_FEE:
+        return Number(tuitionFee.confirmation_fee);
+      default:
+        return Number(tuitionFee.fee);
+    }
   }
 }

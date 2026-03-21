@@ -8,8 +8,10 @@ export class InMemoryStudentsRepository implements StudentsRepository {
   private items: StudentData[] = [];
 
   async create(data: CreateStudentInput): Promise<StudentData> {
+    const { firstName, lastName } = this.splitStudentName(data.name);
     const student: StudentData = {
       id: crypto.randomUUID(),
+      studentNumber: this.generateUniqueStudentNumber(firstName, lastName),
       name: data.name,
       email: data.email || null,
       phoneNumber: data.phoneNumber || null,
@@ -73,5 +75,53 @@ export class InMemoryStudentsRepository implements StudentsRepository {
 
   async delete(id: string): Promise<void> {
     this.items = this.items.filter((student) => student.id !== id);
+  }
+
+  private splitStudentName(name: string): {
+    firstName: string;
+    lastName: string;
+  } {
+    const normalizedName = name.trim().replace(/\s+/g, " ");
+    const [firstName, ...lastNameParts] = normalizedName.split(" ");
+
+    return {
+      firstName,
+      lastName: lastNameParts.join(" ") || firstName,
+    };
+  }
+
+  private generateUniqueStudentNumber(
+    firstName: string,
+    lastName: string,
+  ): string {
+    const entryYear = new Date().getFullYear();
+    const firstInitial = this.extractInitial(firstName);
+    const surnameInitial = this.extractInitial(lastName);
+
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const randomSuffix = this.generateFourDigitRandom();
+      const candidate = `${entryYear}-${firstInitial}-${surnameInitial}-${randomSuffix}`;
+      const exists = this.items.some(
+        (student) => student.studentNumber === candidate,
+      );
+
+      if (!exists) {
+        return candidate;
+      }
+    }
+
+    throw new Error("Could not generate unique student number");
+  }
+
+  private extractInitial(value: string): string {
+    const normalized = value.trim();
+    const firstCharacter = normalized.charAt(0).toUpperCase();
+
+    return firstCharacter || "X";
+  }
+
+  private generateFourDigitRandom(): string {
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    return String(randomSuffix);
   }
 }
