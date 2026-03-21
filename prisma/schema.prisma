@@ -122,14 +122,15 @@ model User {
 }
 
 model Company {
-  id                  String    @id @default(uuid())
-  legal_name          String
-  trade_name          String
-  commercial_registry String    @unique
-  document_code       String
-  email               String    @unique
-  phone_number        String    @unique
-  vat_regime          VATRegime
+  id                   String    @id @default(uuid())
+  legal_name           String
+  trade_name           String
+  nif                  String    @unique @default("")
+  commercial_registry  String    @unique
+  document_code_prefix String
+  email                String    @unique
+  phone_number         String    @unique
+  vat_regime           VATRegime
 
   share_capital Decimal
 

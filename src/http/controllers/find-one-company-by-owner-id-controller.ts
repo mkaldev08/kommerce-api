@@ -1,7 +1,7 @@
-import type { FastifyReply, FastifyRequest } from 'fastify'
-import z from 'zod'
-import { ResourceNotFoundError } from '@/use-cases/errors/resource-not-found-error'
-import { MakeFindOneCompanyByOwnerIdUseCase } from '@/use-cases/factory/make-find-one-company-by-owner-id-use-case'
+import type { FastifyReply, FastifyRequest } from "fastify";
+import z from "zod";
+import { ResourceNotFoundError } from "@/use-cases/errors/resource-not-found-error";
+import { MakeFindOneCompanyByOwnerIdUseCase } from "@/use-cases/factory/make-find-one-company-by-owner-id-use-case";
 
 export async function FindOneCompanyByOwnerId(
   request: FastifyRequest,
@@ -9,25 +9,30 @@ export async function FindOneCompanyByOwnerId(
 ) {
   const findOneCompanyByOwnerIdParamsSchema = z.object({
     ownerId: z.string().uuid(),
-  })
+  });
 
-  const { ownerId } = findOneCompanyByOwnerIdParamsSchema.parse(request.params)
+  const { ownerId } = findOneCompanyByOwnerIdParamsSchema.parse(request.params);
 
   try {
-    const findOneCompanyByOwnerIdUseCase = MakeFindOneCompanyByOwnerIdUseCase()
+    const findOneCompanyByOwnerIdUseCase = MakeFindOneCompanyByOwnerIdUseCase();
 
     const { company } = await findOneCompanyByOwnerIdUseCase.execute({
       ownerId,
-    })
+    });
 
-    return reply.status(200).send({ company })
+    return reply.status(200).send({
+      company: {
+        ...company,
+        nif: company.document_code,
+      },
+    });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return reply.status(400).send({ message: 'Invalid request data' })
+      return reply.status(400).send({ message: "Invalid request data" });
     } else if (err instanceof ResourceNotFoundError) {
-      return reply.status(404).send({ message: err.message })
+      return reply.status(404).send({ message: err.message });
     }
 
-    throw err
+    throw err;
   }
 }

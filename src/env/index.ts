@@ -12,6 +12,9 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3333),
   JWT_SECRET: z.string(),
   COOKIE_SECRET: z.string(),
+  GITHUB_RELEASES_TOKEN: z.string().optional(),
+  GITHUB_RELEASES_OWNER: z.string().default("mkaldev08"),
+  GITHUB_RELEASES_REPO: z.string().default("kommerce-app"),
 });
 
 const _env = envSchema.safeParse(process.env);

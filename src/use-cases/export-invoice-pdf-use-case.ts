@@ -38,9 +38,13 @@ export class ExportInvoicePdfUseCase {
     const fileContent = await this.invoicePdfGenerator.generate(invoiceReport);
     const number = sanitizeFileNamePart(invoiceReport.number);
     const series = sanitizeFileNamePart(invoiceReport.series);
+    const documentCode = sanitizeFileNamePart(
+      invoiceReport.company.documentCode,
+    );
+    const documentIdentifier = `${documentCode}${series}-${number}`;
 
     return {
-      fileName: `invoice-${number}-${series}.pdf`,
+      fileName: `invoice-${documentIdentifier}.pdf`,
       fileContent,
     };
   }

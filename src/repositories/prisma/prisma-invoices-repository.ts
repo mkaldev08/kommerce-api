@@ -30,6 +30,7 @@ export class PrismaInvoicesRepository implements InvoicesRepository {
       number: invoice.number,
       series: invoice.series,
       type: invoice.type,
+      companyDocumentCode: undefined,
       issueDate: invoice.issue_date,
       taxableAmount: Number(invoice.taxable_amount),
       vatAmount: Number(invoice.vat_amount),
@@ -49,6 +50,9 @@ export class PrismaInvoicesRepository implements InvoicesRepository {
   async findById(id: string): Promise<InvoiceData | null> {
     const invoice = await prisma.invoice.findUnique({
       where: { id },
+      include: {
+        company: true,
+      },
     });
 
     if (!invoice) return null;
@@ -58,6 +62,7 @@ export class PrismaInvoicesRepository implements InvoicesRepository {
       number: invoice.number,
       series: invoice.series,
       type: invoice.type,
+      companyDocumentCode: invoice.company.document_code,
       issueDate: invoice.issue_date,
       taxableAmount: Number(invoice.taxable_amount),
       vatAmount: Number(invoice.vat_amount),
@@ -78,6 +83,9 @@ export class PrismaInvoicesRepository implements InvoicesRepository {
     const invoices = await prisma.invoice.findMany({
       where: { business_unit_id: businessUnitId },
       orderBy: { issue_date: "desc" },
+      include: {
+        company: true,
+      },
     });
 
     return invoices.map((invoice) => ({
@@ -85,6 +93,7 @@ export class PrismaInvoicesRepository implements InvoicesRepository {
       number: invoice.number,
       series: invoice.series,
       type: invoice.type,
+      companyDocumentCode: invoice.company.document_code,
       issueDate: invoice.issue_date,
       taxableAmount: Number(invoice.taxable_amount),
       vatAmount: Number(invoice.vat_amount),

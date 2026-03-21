@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -34,6 +33,15 @@ function resolveDatabasePath(databaseUrl: string): string {
 }
 
 async function runSeedBaseData(): Promise<void> {
+  if (!process.env.DATABASE_URL && !process.env.database_url) {
+    // In local dev, load .env when dotenv exists. In packaged runtime, skip silently.
+    try {
+      await import("dotenv/config");
+    } catch {
+      // noop
+    }
+  }
+
   const scriptDir = dirname(fileURLToPath(import.meta.url));
   const backendRoot = resolve(scriptDir, "../..");
   const fallbackDatabaseUrl = `file:${resolve(backendRoot, "db", "dev.db")}`;

@@ -46,6 +46,7 @@ export class PrismaInvoiceReportRepository implements InvoiceReportRepository {
         legalName: invoice.company.legal_name,
         tradeName: invoice.company.trade_name,
         documentCode: invoice.company.document_code,
+        nif: invoice.company.document_code,
         email: invoice.company.email,
         phoneNumber: invoice.company.phone_number,
         streetAddress: invoice.company.street_address,
@@ -66,6 +67,7 @@ export class PrismaInvoiceReportRepository implements InvoiceReportRepository {
           }
         : undefined,
       items: invoice.items.map((item) => ({
+        productCode: item.product.id,
         productName: item.product.name,
         quantity: item.quantity,
         unitPrice: Number(item.unit_price),

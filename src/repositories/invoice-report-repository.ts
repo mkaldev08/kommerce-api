@@ -8,6 +8,7 @@ export interface InvoiceReportCompanyData {
   legalName: string;
   tradeName: string;
   documentCode: string;
+  nif: string;
   email: string;
   phoneNumber: string;
   streetAddress: string;
@@ -29,6 +30,7 @@ export interface InvoiceReportCustomerData {
 }
 
 export interface InvoiceReportItemData {
+  productCode: string;
   productName: string;
   quantity: number;
   unitPrice: number;

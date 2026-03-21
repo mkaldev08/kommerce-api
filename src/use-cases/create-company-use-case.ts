@@ -22,6 +22,7 @@ interface CreateCompanyUseCaseParams {
   created_at?: Date | string;
   commercial_registry: string;
   document_code: string;
+  nif?: string;
   legal_name: string;
   updated_at?: Date | string;
   vat_regime?: VATRegime;
@@ -79,7 +80,7 @@ export class CreateCompanyUseCase {
       legal_name: params.legal_name,
       trade_name: params.trade_name,
       commercial_registry: params.commercial_registry,
-      document_code: params.document_code,
+      document_code: params.document_code || params.nif || "",
       email: params.email,
       phone_number: params.phone_number,
       vat_regime: params.vat_regime ?? "SIMPLIFIED",

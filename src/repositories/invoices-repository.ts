@@ -5,6 +5,7 @@ export interface InvoiceData {
   number: string;
   series: string;
   type: InvoiceType; // InvoiceType: INVOICE | INVOICE_RECEIPT | CREDIT_NOTE | DEBIT_NOTE
+  companyDocumentCode?: string;
   issueDate: Date;
   taxableAmount: number;
   vatAmount: number;

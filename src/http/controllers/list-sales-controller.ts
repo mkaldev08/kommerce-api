@@ -40,6 +40,10 @@ export async function listSalesController(
 
         return {
           id: invoice.id,
+          number: invoice.number,
+          series: invoice.series,
+          type: invoice.type,
+          companyDocumentCode: invoice.companyDocumentCode,
           businessUnitId: invoice.businessUnitId,
           customerId: invoice.customerId,
           totalAmount: invoice.totalAmount,

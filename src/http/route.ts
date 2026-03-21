@@ -54,6 +54,7 @@ import { UpdateEnrollmentController } from "./controllers/update-enrollment-cont
 import { DeleteEnrollmentController } from "./controllers/delete-enrollment-controller";
 import { exportEnrollmentPdfController } from "./controllers/export-enrollment-pdf-controller";
 import { RegisterEnrollmentPaymentController } from "./controllers/register-enrollment-payment-controller";
+import { getAppUpdateAssetController } from "./controllers/get-app-update-asset-controller";
 
 export function appRoutes(app: FastifyInstance) {
   app.post("/companies/:ownerId", CreateCompany);
@@ -171,6 +172,8 @@ export function appRoutes(app: FastifyInstance) {
 
 export function nonAuthenticatedRoutes(app: FastifyInstance) {
   app.get("/health", async () => ({ status: "ok" }));
+  app.get("/updates/:platform/channel", getAppUpdateAssetController);
+  app.get("/updates/:platform/:assetName", getAppUpdateAssetController);
   app.post("/users", registerUser);
   app.post("/sessions", authenticateUser);
 }

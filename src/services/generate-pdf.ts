@@ -1,4 +1,5 @@
 import puppeteer, { type PDFOptions } from "puppeteer";
+import QRCode from "qrcode";
 import type { InvoiceReportData } from "@/repositories/invoice-report-repository";
 import { renderInvoiceTemplate } from "@/templates/invoice-template";
 import type { InvoicePdfGenerator } from "@/use-cases/services/invoice-pdf-generator";
@@ -59,19 +60,94 @@ const DATE_FORMATTER = new Intl.DateTimeFormat("pt-PT", {
   timeZone: "Africa/Luanda",
 });
 
+const INVOICE_TYPE_LABEL: Record<InvoiceReportData["type"], string> = {
+  INVOICE: "Fatura",
+  INVOICE_RECEIPT: "Fatura Recibo",
+  CREDIT_NOTE: "Nota de Crédito",
+  DEBIT_NOTE: "Nota de Débito",
+};
+
+const INVOICE_TYPE_CODE: Record<InvoiceReportData["type"], string> = {
+  INVOICE: "FT",
+  INVOICE_RECEIPT: "FR",
+  CREDIT_NOTE: "NC",
+  DEBIT_NOTE: "ND",
+};
+
+const PAYMENT_METHOD_LABEL: Partial<
+  Record<NonNullable<InvoiceReportData["paymentMethod"]>, string>
+> = {
+  CASH: "Dinheiro",
+  CARD: "Cartão",
+  EXPRESS: "Express",
+  BANK_TRANSFER: "Transferência",
+};
+
+const formatDocumentIdentifier = (data: InvoiceReportData): string => {
+  const documentCode = data.company.documentCode.trim();
+  const series = data.series.trim();
+  const number = data.number.trim();
+
+  return `${documentCode}${series}/${number}`;
+};
+
+const buildQrCodePayload = (data: InvoiceReportData): string => {
+  const customer = data.customer?.name ?? "Consumidor Final";
+  const nif = data.customer?.nif ?? "999999999";
+  const total = data.totalAmount.toFixed(2);
+  const documentIdentifier = formatDocumentIdentifier(data);
+
+  return [
+    `DOC=${INVOICE_TYPE_CODE[data.type]} ${documentIdentifier}`,
+    `DATA=${DATE_FORMATTER.format(data.issueDate)}`,
+    `EMITENTE=${data.company.tradeName || data.company.legalName}`,
+    `NIF=${data.company.nif}`,
+    `CLIENTE=${customer}`,
+    `NIF_CLIENTE=${nif}`,
+    `TOTAL_AOA=${total}`,
+  ].join("\n");
+};
+
 export class PuppeteerInvoicePdfGenerator implements InvoicePdfGenerator {
   async generate(data: InvoiceReportData): Promise<Buffer> {
+    const documentIdentifier = formatDocumentIdentifier(data);
+
+    const qrCodeDataUrl = await QRCode.toDataURL(buildQrCodePayload(data), {
+      errorCorrectionLevel: "M",
+      margin: 0,
+      width: 220,
+    });
+
     const html = renderInvoiceTemplate({
+      typeLabel: INVOICE_TYPE_LABEL[data.type],
+      typeCode: INVOICE_TYPE_CODE[data.type],
       companyName: data.company.tradeName || data.company.legalName,
+      companyAddress: data.company.streetAddress,
+      companyPhone: data.company.phoneNumber,
+      companyEmail: data.company.email,
+      companyDocumentCode: data.company.documentCode,
       customerName: data.customer?.name ?? "Consumidor Final",
-      invoiceNumber: `${data.number}/${data.series}`,
+      customerAddress: data.customer?.streetAddress ?? "Sem morada",
+      customerNif: data.customer?.nif ?? "999999999",
+      invoiceNumber: documentIdentifier,
       date: DATE_FORMATTER.format(data.issueDate),
+      paymentMethod: data.paymentMethod
+        ? (PAYMENT_METHOD_LABEL[data.paymentMethod] ?? data.paymentMethod)
+        : "Não informado",
       items: data.items.map((item) => ({
+        code: item.productCode,
         description: item.productName,
         quantity: item.quantity,
-        price: item.unitPrice,
+        unit: "Un",
+        unitPrice: item.unitPrice,
+        discountRate: 0,
+        vatRate: item.vatRate,
+        total: item.subtotal,
       })),
+      taxableAmount: data.taxableAmount,
+      vatAmount: data.vatAmount,
       total: data.totalAmount,
+      qrCodeDataUrl,
     });
 
     return generatePdf(html, { format: "A4" });
