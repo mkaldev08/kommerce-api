@@ -34,11 +34,9 @@ export class OpenWorkShiftUseCase {
       throw new CashRegisterClosedError();
     }
 
-    const existingShift =
-      await this.workShiftsRepository.findOpenByCashRegisterAndOperator(
-        request.cashRegisterId,
-        request.operatorId,
-      );
+    const existingShift = await this.workShiftsRepository.findOpenByCashRegisterId(
+      request.cashRegisterId,
+    );
 
     if (existingShift) {
       throw new WorkShiftAlreadyOpenError();

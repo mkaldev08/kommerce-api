@@ -1,7 +1,6 @@
 import { CashRegisterStatus } from "generated/prisma/enums";
 import type { BusinessUnitRepository } from "@/repositories/business-unit-repository";
 import type { CashRegistersRepository } from "@/repositories/cash-registers-repository";
-import { BusinessUnitNotStoreError } from "./errors/business-unit-not-store-error";
 import { CashRegisterAlreadyOpenError } from "./errors/cash-register-already-open-error";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 
@@ -29,10 +28,6 @@ export class OpenCashRegisterUseCase {
 
     if (!businessUnit) {
       throw new ResourceNotFoundError();
-    }
-
-    if (businessUnit.type !== "STORE") {
-      throw new BusinessUnitNotStoreError();
     }
 
     const existingOpen =

@@ -6,6 +6,7 @@ import { fastify } from "fastify";
 import { env } from "./env";
 import { appRoutes, nonAuthenticatedRoutes } from "./http/route";
 import { verifyJWT } from "./middlewares/verify-jwt";
+import { initializeFinancialPlansCronJob } from "./lib/cron-jobs";
 
 export const app = fastify();
 const API_VERSION = "/api/v1";
@@ -64,3 +65,6 @@ app.register(fastifyMultipart, {
 
 app.register(appRoutes, { prefix: API_VERSION, preHandler: [verifyJWT] });
 app.register(nonAuthenticatedRoutes, { prefix: API_VERSION });
+
+// Initialize cron jobs
+initializeFinancialPlansCronJob();

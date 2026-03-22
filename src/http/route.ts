@@ -54,16 +54,25 @@ import { UpdateEnrollmentController } from "./controllers/update-enrollment-cont
 import { DeleteEnrollmentController } from "./controllers/delete-enrollment-controller";
 import { exportEnrollmentPdfController } from "./controllers/export-enrollment-pdf-controller";
 import { RegisterEnrollmentPaymentController } from "./controllers/register-enrollment-payment-controller";
+import { ListTuitionFeesController } from "./controllers/list-tuition-fees-controller";
+import { CreateTuitionFeeController } from "./controllers/create-tuition-fee-controller";
+import { ListEnrollmentFinancialPlansController } from "./controllers/list-enrollment-financial-plans-controller";
+import { ListRecentEnrollmentPaymentsController } from "./controllers/list-recent-enrollment-payments-controller";
 import { getAppUpdateAssetController } from "./controllers/get-app-update-asset-controller";
 import { uploadCompanyLogoController } from "./controllers/upload-company-logo-controller";
 import { getCompanyLogoController } from "./controllers/get-company-logo-controller";
 import { UpdateCompanyController } from "./controllers/update-company-controller";
 import { getDashboardMetricsController } from "./controllers/get-dashboard-metrics-controller";
+import { VerifyCompanyAccessPasscodeController } from "./controllers/verify-company-access-passcode-controller";
 
 export function appRoutes(app: FastifyInstance) {
   app.post("/companies/:ownerId", CreateCompany);
   app.get("/companies/:companyId", FindCompanyById);
   app.patch("/companies/:companyId", UpdateCompanyController);
+  app.post(
+    "/companies/:companyId/access-passcode/verify",
+    VerifyCompanyAccessPasscodeController,
+  );
   app.patch("/companies/:companyId/logo", uploadCompanyLogoController);
   app.get("/companies/:companyId/logo", getCompanyLogoController);
   app.get("/companies/owner/:ownerId", FindCompaniesByOwnerId);
@@ -120,6 +129,9 @@ export function appRoutes(app: FastifyInstance) {
   app.get("/academy/belts", ListBeltsController);
   app.post("/academy/belts", CreateBeltController);
 
+  app.get("/academy/tuition-fees", ListTuitionFeesController);
+  app.post("/academy/tuition-fees", CreateTuitionFeeController);
+
   app.get("/academy/school-years", ListSchoolYearsController);
   app.post("/academy/school-years", CreateSchoolYearController);
 
@@ -152,6 +164,14 @@ export function appRoutes(app: FastifyInstance) {
   app.post(
     "/business-units/:businessUnitId/enrollments/:id/payments",
     RegisterEnrollmentPaymentController,
+  );
+  app.get(
+    "/business-units/:businessUnitId/enrollments/:id/financial-plans",
+    ListEnrollmentFinancialPlansController,
+  );
+  app.get(
+    "/business-units/:businessUnitId/payments/recent",
+    ListRecentEnrollmentPaymentsController,
   );
 
   // Sales/Invoice routes

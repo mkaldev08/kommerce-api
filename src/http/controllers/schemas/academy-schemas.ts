@@ -38,11 +38,33 @@ export const listClassesQuerySchema = z.object({
   schoolYearId: z.string().uuid().optional(),
 });
 
+export const listTuitionFeesQuerySchema = z.object({
+  beltId: z.string().uuid().optional(),
+});
+
+export const listEnrollmentFinancialPlansQuerySchema = z.object({
+  schoolYearId: z.string().uuid().optional(),
+  status: z.enum(["PENDING", "PAID", "OVERDUE", "ALL"]).optional(),
+});
+
+export const listRecentEnrollmentPaymentsQuerySchema = z.object({
+  search: z.string().trim().min(2).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(),
+});
+
+export const createTuitionFeeBodySchema = z.object({
+  beltId: z.string().uuid(),
+  fee: z.number().positive(),
+  enrollmentFee: z.number().positive(),
+  confirmationFee: z.number().positive(),
+  fineTax: z.number().min(0).max(100).optional(),
+  dueDay: z.number().int().min(1).max(28),
+});
+
 export const createEnrollmentBodySchema = z.object({
   studentId: z.string().uuid(),
   classId: z.string().uuid(),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date().nullable().optional(),
+  beltId: z.string().uuid(),
 });
 
 export const updateEnrollmentBodySchema = z.object({

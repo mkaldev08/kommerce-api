@@ -4,6 +4,7 @@ export interface PaymentData {
   method: string; // PaymentMethod
   paymentDate: Date;
   invoiceId: string;
+  financialPlanId?: string | null;
   paymentType: string;
 }
 
@@ -12,6 +13,7 @@ export interface CreatePaymentInput {
   method: string; // PaymentMethod
   paymentDate?: Date;
   invoiceId: string;
+  financialPlanId?: string | null;
   paymentType: string;
 }
 

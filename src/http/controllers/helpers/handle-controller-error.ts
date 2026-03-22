@@ -1,5 +1,6 @@
 import type { FastifyReply } from "fastify";
 import z from "zod";
+import { AcademyFinancialConfigMissingError } from "@/use-cases/errors/academy-financial-config-missing-error";
 import { BusinessUnitNotAcademyError } from "@/use-cases/errors/business-unit-not-academy-error";
 import { ResourceNotFoundError } from "@/use-cases/errors/resource-not-found-error";
 import { Prisma } from "../../../../generated/prisma/client";
@@ -22,6 +23,11 @@ export function handleControllerError(
   }
 
   if (error instanceof BusinessUnitNotAcademyError) {
+    reply.status(400).send({ message: error.message });
+    return true;
+  }
+
+  if (error instanceof AcademyFinancialConfigMissingError) {
     reply.status(400).send({ message: error.message });
     return true;
   }

@@ -7,6 +7,7 @@ export interface CashRegisterData {
   closedAt?: Date | null;
   businessUnitId: string;
   operatorId: string;
+  operatorName?: string | null;
 }
 
 export interface CreateCashRegisterInput {

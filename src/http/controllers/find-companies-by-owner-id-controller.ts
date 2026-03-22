@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import z from "zod";
 import { ResourceNotFoundError } from "@/use-cases/errors/resource-not-found-error";
 import { MakeFindCompaniesByOwnerIdUseCase } from "@/use-cases/factory/make-find-companies-by-owner-id-use-case";
+import { serializeCompanies } from "./helpers/serialize-company";
 
 export async function FindCompaniesByOwnerId(
   request: FastifyRequest,
@@ -20,7 +21,7 @@ export async function FindCompaniesByOwnerId(
       ownerId,
     });
 
-    return reply.status(200).send({ companies });
+    return reply.status(200).send({ companies: serializeCompanies(companies) });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return reply.status(400).send({ message: "Invalid request data" });

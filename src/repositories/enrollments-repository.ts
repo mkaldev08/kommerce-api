@@ -20,20 +20,25 @@ export interface EnrollmentData {
 export interface CreateEnrollmentInput {
   studentId: string;
   classId: string;
+  beltId: string;
   businessUnitId: string;
+}
+
+export interface CreateEnrollmentPersistenceInput extends CreateEnrollmentInput {
   startDate: Date;
   endDate?: Date | null;
 }
 
+export interface UpdateEnrollmentInput {
+  classId?: string;
+  startDate?: Date;
+  endDate?: Date | null;
+}
+
 export interface EnrollmentsRepository {
-  create(data: CreateEnrollmentInput): Promise<EnrollmentData>;
+  create(data: CreateEnrollmentPersistenceInput): Promise<EnrollmentData>;
   findById(id: string): Promise<EnrollmentData | null>;
   findManyByBusinessUnitId(businessUnitId: string): Promise<EnrollmentData[]>;
-  update(
-    id: string,
-    data: Partial<
-      Pick<CreateEnrollmentInput, "classId" | "startDate" | "endDate">
-    >,
-  ): Promise<EnrollmentData>;
+  update(id: string, data: UpdateEnrollmentInput): Promise<EnrollmentData>;
   delete(id: string): Promise<void>;
 }

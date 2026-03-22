@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import type {
-  CreateEnrollmentInput,
+  CreateEnrollmentPersistenceInput,
   EnrollmentData,
   EnrollmentsRepository,
+  UpdateEnrollmentInput,
 } from "../enrollments-repository";
 
 type EnrollmentWithRelations = {
@@ -29,7 +30,9 @@ type EnrollmentWithRelations = {
 };
 
 export class PrismaEnrollmentsRepository implements EnrollmentsRepository {
-  async create(data: CreateEnrollmentInput): Promise<EnrollmentData> {
+  async create(
+    data: CreateEnrollmentPersistenceInput,
+  ): Promise<EnrollmentData> {
     const enrollment = await prisma.enrollment.create({
       data: {
         student_id: data.studentId,
@@ -63,9 +66,7 @@ export class PrismaEnrollmentsRepository implements EnrollmentsRepository {
 
   async update(
     id: string,
-    data: Partial<
-      Pick<CreateEnrollmentInput, "classId" | "startDate" | "endDate">
-    >,
+    data: UpdateEnrollmentInput,
   ): Promise<EnrollmentData> {
     const enrollment = await prisma.enrollment.update({
       where: { id },

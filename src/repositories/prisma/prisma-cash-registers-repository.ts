@@ -31,6 +31,13 @@ export class PrismaCashRegistersRepository implements CashRegistersRepository {
   async findById(id: string): Promise<CashRegisterData | null> {
     const cashRegister = await prisma.cashRegister.findUnique({
       where: { id },
+      include: {
+        operator: {
+          select: {
+            full_name: true,
+          },
+        },
+      },
     });
 
     if (!cashRegister) {
@@ -44,6 +51,7 @@ export class PrismaCashRegistersRepository implements CashRegistersRepository {
       closedAt: cashRegister.closed_at,
       businessUnitId: cashRegister.business_unit_id,
       operatorId: cashRegister.operator_id,
+      operatorName: cashRegister.operator.full_name,
     };
   }
 
@@ -54,6 +62,13 @@ export class PrismaCashRegistersRepository implements CashRegistersRepository {
       where: {
         business_unit_id: businessUnitId,
         status: CashRegisterStatus.OPEN,
+      },
+      include: {
+        operator: {
+          select: {
+            full_name: true,
+          },
+        },
       },
       orderBy: { opened_at: "desc" },
     });
@@ -69,6 +84,7 @@ export class PrismaCashRegistersRepository implements CashRegistersRepository {
       closedAt: cashRegister.closed_at,
       businessUnitId: cashRegister.business_unit_id,
       operatorId: cashRegister.operator_id,
+      operatorName: cashRegister.operator.full_name,
     };
   }
 

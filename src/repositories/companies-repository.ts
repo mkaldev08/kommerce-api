@@ -9,6 +9,7 @@ export interface UpdateCompanyInput {
   street_address?: string;
   postal_code?: string | null;
   municipality_id?: string;
+  access_passcode_hash?: string | null;
 }
 
 export interface CompaniesRepository {

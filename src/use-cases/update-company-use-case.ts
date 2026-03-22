@@ -12,6 +12,7 @@ interface UpdateCompanyUseCaseParams {
   street_address?: string;
   postal_code?: string | null;
   municipality_id?: string;
+  access_passcode_hash?: string | null;
 }
 
 interface UpdateCompanyUseCaseResponse {
@@ -41,6 +42,7 @@ export class UpdateCompanyUseCase {
         street_address: params.street_address,
         postal_code: params.postal_code,
         municipality_id: params.municipality_id,
+        access_passcode_hash: params.access_passcode_hash,
       },
     );
 

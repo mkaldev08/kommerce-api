@@ -17,9 +17,8 @@ export async function CreateEnrollmentController(
     const { enrollment } = await useCase.execute({
       studentId: body.studentId,
       classId: body.classId,
+      beltId: body.beltId,
       businessUnitId,
-      startDate: body.startDate,
-      endDate: body.endDate ?? null,
     });
 
     return reply.status(201).send({ enrollment });

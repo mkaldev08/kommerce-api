@@ -133,6 +133,7 @@ model Company {
   email                String    @unique
   phone_number         String    @unique
   vat_regime           VATRegime
+  access_passcode_hash String?   @map("access_passcode_hash")
 
   share_capital Decimal
 
