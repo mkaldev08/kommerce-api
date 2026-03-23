@@ -42,7 +42,7 @@ app.setErrorHandler((error, request, reply) => {
 
   if (error instanceof ZodError) {
     return reply.status(400).send({
-      message: "Validation error.",
+      message: "Erro de validação.",
       issues: z.treeifyError(error),
     });
   }
@@ -53,7 +53,7 @@ app.setErrorHandler((error, request, reply) => {
     // TODO: Here you can integrate with a logging service like Sentry, LogRocket, etc.
   }
 
-  return reply.status(500).send({ message: "Internal server error." });
+  return reply.status(500).send({ message: "Erro interno do servidor." });
 });
 
 app

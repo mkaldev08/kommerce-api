@@ -127,7 +127,7 @@ model Company {
   trade_name           String
   nif                  String?   @unique
   commercial_registry  String    @unique
-  document_code_prefix String    @map("document_code")
+  document_code_prefix String
   image_data           String?
   image_type           String?
   email                String    @unique

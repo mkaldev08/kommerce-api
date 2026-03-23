@@ -9,7 +9,7 @@ export async function FindCompaniesByOwnerId(
   reply: FastifyReply,
 ) {
   const findCompaniesByOwnerIdParamsSchema = z.object({
-    ownerId: z.uuid(),
+    ownerId: z.string().trim().min(1),
   });
 
   const { ownerId } = findCompaniesByOwnerIdParamsSchema.parse(request.params);
@@ -24,7 +24,7 @@ export async function FindCompaniesByOwnerId(
     return reply.status(200).send({ companies: serializeCompanies(companies) });
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return reply.status(400).send({ message: "Invalid request data" });
+      return reply.status(400).send({ message: "Dados inválidos no pedido." });
     } else if (err instanceof ResourceNotFoundError) {
       return reply.status(404).send({ message: err.message });
     }

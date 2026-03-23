@@ -18,7 +18,7 @@ export async function CreateCompany(
     email: z.email().trim(),
     phone_number: z.string().trim().min(9),
     street_address: z.string(),
-    owner_id: z.uuid(),
+    owner_id: z.string().trim().min(1),
     municipality_id: z.string(),
     vat_regime: z
       .enum(["SIMPLIFIED", "EXEMPTION", "GENERAL"])
@@ -28,7 +28,7 @@ export async function CreateCompany(
   });
 
   const createCompanyParamsSchema = z.object({
-    ownerId: z.uuid(),
+    ownerId: z.string().trim().min(1),
   });
 
   const { ownerId } = createCompanyParamsSchema.parse(request.params);
@@ -51,11 +51,15 @@ export async function CreateCompany(
     });
   } catch (err) {
     if (err instanceof CompanyAlreadyExistsError) {
-      reply.status(409).send({ message: err.message });
-    } else if (err instanceof z.ZodError) {
-      reply.status(400).send({ message: "Invalid request data" });
-    } else if (err instanceof ResourceNotFoundError) {
-      reply.status(403).send({ message: err.message });
+      return reply.status(409).send({ message: err.message });
+    }
+
+    if (err instanceof z.ZodError) {
+      return reply.status(400).send({ message: "Dados inválidos no pedido." });
+    }
+
+    if (err instanceof ResourceNotFoundError) {
+      return reply.status(403).send({ message: err.message });
     }
 
     throw err;

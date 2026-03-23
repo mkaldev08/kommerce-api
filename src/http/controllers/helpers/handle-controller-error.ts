@@ -11,7 +11,7 @@ export function handleControllerError(
 ): boolean {
   if (error instanceof z.ZodError) {
     reply.status(400).send({
-      message: "Invalid request data",
+      message: "Dados inválidos no pedido.",
       issues: error.issues,
     });
     return true;
