@@ -3,6 +3,7 @@ node_modules
 
 #Database
 db/*.db
+db/logs/*
 
 # generated build/runtime artifacts
 build

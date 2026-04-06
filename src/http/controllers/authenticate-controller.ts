@@ -1,7 +1,7 @@
-import type { FastifyReply, FastifyRequest } from "fastify";
-import z from "zod";
-import { InvalidCredentialsError } from "@/use-cases/errors/invalid-credentials-error";
-import { MakeAuthenticateUseCase } from "@/use-cases/factory/make-authenticate-use-case";
+import type { FastifyReply, FastifyRequest } from 'fastify'
+import z from 'zod'
+import { InvalidCredentialsError } from '@/use-cases/errors/invalid-credentials-error'
+import { MakeAuthenticateUseCase } from '@/use-cases/factory/make-authenticate-use-case'
 
 export async function authenticateUser(
   request: FastifyRequest,
@@ -10,31 +10,33 @@ export async function authenticateUser(
   const authenticateBodySchema = z.object({
     password: z.string(),
     username: z.string().trim().min(5),
-  });
-  const { password, username } = authenticateBodySchema.parse(request.body);
+  })
+  const { password, username } = authenticateBodySchema.parse(request.body)
 
   try {
-    const authenticateUseCase = MakeAuthenticateUseCase();
+    const authenticateUseCase = MakeAuthenticateUseCase()
 
     const { user } = await authenticateUseCase.execute({
       password,
       username,
-    });
+    })
 
     const accessToken = await reply.jwtSign(
-      {},
+      {
+        role: user.role,
+      },
       {
         sub: user.id,
-        expiresIn: "7d",
+        expiresIn: '7d',
       },
-    );
+    )
 
-    reply.setCookie("accessToken", accessToken, {
+    reply.setCookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Use secure: true in production
+      secure: process.env.NODE_ENV === 'production', // Use secure: true in production
       sameSite: true,
-      path: "/",
-    });
+      path: '/',
+    })
 
     return reply.status(200).send({
       user: {
@@ -42,13 +44,15 @@ export async function authenticateUser(
         username: user.username,
         email: user.email,
         full_name: user.full_name,
+        role: user.role,
+        business_unit_id: user.business_unit_id,
         accessToken,
       },
-    });
+    })
   } catch (err) {
     if (err instanceof InvalidCredentialsError) {
-      return reply.status(401).send({ message: err.message });
+      return reply.status(401).send({ message: err.message })
     }
-    throw err;
+    throw err
   }
 }

@@ -32,6 +32,9 @@ importers:
       '@prisma/adapter-libsql':
         specifier: 7.4.2
         version: 7.4.2
+      '@rbac/rbac':
+        specifier: 2.1.3
+        version: 2.1.3
       bcryptjs:
         specifier: 3.0.3
         version: 3.0.3
@@ -889,6 +892,9 @@ packages:
     resolution: {integrity: sha512-46BZJYJjc/WwmKjsvDFykHtXrtomsCIrwYQPOP7VfMJoZY2bsDF9oROBABR3paDjDcmkUye1Pb1BqdcdiipaWA==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@rbac/rbac@2.1.3':
+    resolution: {integrity: sha512-6rmSW2xmxFi0LUcT7yCSHDaIB1K4hSc8uiGQjqcFz0LsC7X2qOgebXgyjSdOtGptqVdiMdBtSoTZp9iW/lTgPw==}
 
   '@rollup/rollup-android-arm-eabi@4.53.3':
     resolution: {integrity: sha512-mRSi+4cBjrRLoaal2PnqH82Wqyb+d3HsPUN/W+WslCXsZsyHa9ZeQQX/pQsZaVIWDkPcpV6jJ+3KLbTbgnwv8w==}
@@ -3266,6 +3272,10 @@ snapshots:
       - bare-buffer
       - react-native-b4a
       - supports-color
+
+  '@rbac/rbac@2.1.3':
+    dependencies:
+      zod: 3.25.76
 
   '@rollup/rollup-android-arm-eabi@4.53.3':
     optional: true

@@ -20,6 +20,12 @@ enum BusinessUnitType {
   ACADEMY // Academia desportiva
 }
 
+enum UserRole {
+  ADMIN
+  MANAGER
+  OPERATOR
+}
+
 enum InvoiceType {
   INVOICE // Fatura
   INVOICE_RECEIPT // Fatura-recibo
@@ -69,6 +75,25 @@ enum PaymentType {
   CONFIRMATION_FEE // Taxa de confirmação
 }
 
+enum GamingConsoleStatus {
+  AVAILABLE
+  IN_USE
+  MAINTENANCE
+}
+
+enum GamingSessionStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum GamingTournamentStatus {
+  PLANNED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
 enum FinancialPlanStatus {
   PENDING // Pendente
   PAID // Pago
@@ -103,21 +128,33 @@ model Municipality {
 }
 
 model User {
-  id            String  @id @default(uuid())
-  username      String  @unique
+  id            String   @id @default(uuid())
+  username      String   @unique
   full_name     String
-  email         String  @unique
-  phone_number  String  @unique
+  email         String   @unique
+  phone_number  String   @unique
   password_hash String
-  is_active     Boolean @default(true)
+  is_active     Boolean  @default(true)
+  role          UserRole @default(ADMIN)
 
-  owned_companies    Company[]
-  operated_registers CashRegister[]
-  work_shifts        WorkShift[]
+  business_unit_id String?
+  business_unit    BusinessUnit? @relation("BusinessUnitUsers", fields: [business_unit_id], references: [id], onDelete: SetNull)
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  owned_companies         Company[]
+  operated_registers      CashRegister[]
+  work_shifts             WorkShift[]
+  invoices                Invoice[]              @relation("UserInvoices")
+  payments                Payment[]              @relation("UserPayments")
+  cash_movements          CashMovement[]         @relation("UserCashMovements")
+  gaming_session_payments GamingSessionPayment[] @relation("UserGamingSessionPayments")
+  gaming_sessions         GamingSession[]        @relation("UserGamingSessions")
 
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([business_unit_id])
+  @@index([role])
   @@map("users")
 }
 
@@ -149,8 +186,9 @@ model Company {
   invoices        Invoice[]
   financial_plans FinancialPlan[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@index([owner_id])
   @@index([municipality_id])
@@ -166,15 +204,208 @@ model BusinessUnit {
   company_id String
   company    Company @relation(fields: [company_id], references: [id], onDelete: Cascade)
 
-  cash_registers CashRegister[]
-  invoices       Invoice[]
-  students       Student[]
+  cash_registers     CashRegister[]
+  invoices           Invoice[]
+  students           Student[]
+  gaming_customers   GamingCustomer[]
+  gaming_consoles    GamingConsole[]
+  gaming_games       GamingGame[]
+  gaming_sessions    GamingSession[]
+  gaming_expenses    GamingExpense[]
+  gaming_tournaments GamingTournament[]
+  users              User[]             @relation("BusinessUnitUsers")
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@unique([company_id, name])
   @@map("business_units")
+}
+
+model GamingCustomer {
+  id           String  @id @default(uuid())
+  name         String
+  email        String?
+  phone_number String?
+  notes        String?
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
+
+  sessions        GamingSession[]
+  won_tournaments GamingTournament[] @relation("GamingTournamentWinner")
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([business_unit_id])
+  @@index([name])
+  @@map("gaming_customers")
+}
+
+model GamingConsole {
+  id    String  @id @default(uuid())
+  name  String
+  brand String?
+  model String?
+
+  hourly_rate Decimal
+  status      GamingConsoleStatus @default(AVAILABLE)
+  is_active   Boolean             @default(true)
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
+
+  sessions GamingSession[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@unique([business_unit_id, name])
+  @@index([business_unit_id])
+  @@index([status])
+  @@map("gaming_consoles")
+}
+
+model GamingGame {
+  id          String  @id @default(uuid())
+  name        String
+  genre       String?
+  hourly_rate Decimal
+  is_active   Boolean @default(true)
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
+
+  sessions    GamingSession[]
+  tournaments GamingTournament[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@unique([business_unit_id, name])
+  @@index([business_unit_id])
+  @@map("gaming_games")
+}
+
+model GamingSession {
+  id String @id @default(uuid())
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
+
+  customer_id String
+  customer    GamingCustomer @relation(fields: [customer_id], references: [id])
+
+  console_id String
+  console    GamingConsole @relation(fields: [console_id], references: [id])
+
+  game_id String
+  game    GamingGame @relation(fields: [game_id], references: [id])
+
+  user_id String?
+  user    User?   @relation("UserGamingSessions", fields: [user_id], references: [id])
+
+  start_time       DateTime
+  end_time         DateTime?
+  duration_minutes Int?
+  hourly_rate      Decimal
+  total_amount     Decimal?
+  status           GamingSessionStatus @default(ACTIVE)
+  notes            String?
+
+  payments GamingSessionPayment[]
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([business_unit_id])
+  @@index([customer_id])
+  @@index([console_id])
+  @@index([game_id])
+  @@index([user_id])
+  @@index([status])
+  @@index([start_time])
+  @@map("gaming_sessions")
+}
+
+model GamingSessionPayment {
+  id String @id @default(uuid())
+
+  session_id String
+  session    GamingSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  user_id String?
+  user    User?   @relation("UserGamingSessionPayments", fields: [user_id], references: [id])
+
+  amount       Decimal
+  method       PaymentMethod
+  payment_date DateTime      @default(now())
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([session_id])
+  @@index([user_id])
+  @@index([method])
+  @@index([payment_date])
+  @@map("gaming_session_payments")
+}
+
+model GamingExpense {
+  id String @id @default(uuid())
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
+
+  description  String
+  category     String?
+  amount       Decimal
+  expense_date DateTime @default(now())
+  notes        String?
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([business_unit_id])
+  @@index([expense_date])
+  @@map("gaming_expenses")
+}
+
+model GamingTournament {
+  id String @id @default(uuid())
+
+  business_unit_id String
+  business_unit    BusinessUnit @relation(fields: [business_unit_id], references: [id], onDelete: Cascade)
+
+  game_id String?
+  game    GamingGame? @relation(fields: [game_id], references: [id])
+
+  name       String
+  start_date DateTime
+  end_date   DateTime?
+  entry_fee  Decimal?
+  prize_pool Decimal?
+  status     GamingTournamentStatus @default(PLANNED)
+
+  winner_customer_id String?
+  winner_customer    GamingCustomer? @relation("GamingTournamentWinner", fields: [winner_customer_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@index([business_unit_id])
+  @@index([game_id])
+  @@index([status])
+  @@map("gaming_tournaments")
 }
 
 model Category {
@@ -303,16 +534,21 @@ model Invoice {
   cash_register_id String
   cash_register    CashRegister @relation(fields: [cash_register_id], references: [id])
 
+  user_id String?
+  user    User?   @relation("UserInvoices", fields: [user_id], references: [id])
+
   items    InvoiceItem[]
   payments Payment[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@unique([number, series])
   @@index([company_id])
   @@index([business_unit_id])
   @@index([cash_register_id])
+  @@index([user_id])
   @@index([issue_date])
   @@index([type])
   @@index([status])
@@ -334,6 +570,10 @@ model InvoiceItem {
   product_id String
   product    Product @relation(fields: [product_id], references: [id])
 
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
   @@index([invoice_id])
   @@index([product_id])
   @@index([vat_status])
@@ -352,12 +592,17 @@ model Payment {
   financial_plan_id String?
   financial_plan    FinancialPlan? @relation(fields: [financial_plan_id], references: [id])
 
+  user_id String?
+  user    User?   @relation("UserPayments", fields: [user_id], references: [id])
+
   payment_type PaymentType
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@index([invoice_id])
+  @@index([user_id])
   @@index([method])
   @@index([payment_date])
   @@index([financial_plan_id])
@@ -380,8 +625,9 @@ model CashRegister {
   movements   CashMovement[]
   work_shifts WorkShift[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@index([business_unit_id])
   @@index([status])
@@ -399,9 +645,15 @@ model CashMovement {
   cash_register_id String
   cash_register    CashRegister @relation(fields: [cash_register_id], references: [id])
 
-  created_at DateTime @default(now())
+  user_id String?
+  user    User?   @relation("UserCashMovements", fields: [user_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@index([cash_register_id])
+  @@index([user_id])
   @@index([type])
   @@index([movement_date])
   @@map("cash_movements")
@@ -448,8 +700,9 @@ model Student {
 
   enrollments Enrollment[]
 
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   @@unique([first_name, last_name, business_unit_id])
   @@index([business_unit_id])
@@ -472,6 +725,7 @@ model Enrollment {
 
   created_at      DateTime         @default(now())
   updated_at      DateTime         @updatedAt
+  deleted_at      DateTime?
   enrollmentBelts EnrollmentBelt[]
 
   @@index([student_id])
@@ -605,6 +859,7 @@ model FinancialPlan {
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+  deleted_at DateTime?
   payments   Payment[]
 
   @@index([company_id])
