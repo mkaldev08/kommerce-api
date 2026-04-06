@@ -44,6 +44,9 @@ importers:
       fastify:
         specifier: 5.6.2
         version: 5.6.2
+      path-to-regexp:
+        specifier: 8.4.2
+        version: 8.4.2
       puppeteer:
         specifier: 24.38.0
         version: 24.38.0(typescript@5.9.3)
@@ -1973,6 +1976,9 @@ packages:
   path-scurry@2.0.1:
     resolution: {integrity: sha512-oWyT4gICAu+kaA7QWk/jvCHWarMKNs6pXOGWKDTr7cw4IGcUbW+PeTfbaQiLGheFRpjo6O9J0PmyMfQPjH71oA==}
     engines: {node: 20 || >=22}
+
+  path-to-regexp@8.4.2:
+    resolution: {integrity: sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA==}
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
@@ -4362,6 +4368,8 @@ snapshots:
     dependencies:
       lru-cache: 11.2.6
       minipass: 7.1.2
+
+  path-to-regexp@8.4.2: {}
 
   pathe@2.0.3: {}
 

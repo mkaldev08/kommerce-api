@@ -1,0 +1,15 @@
+export const ACADEMY = {
+  READ: 'academy:read',
+  CREATE: 'academy:create',
+  STUDENTS_CREATE: 'students:create',
+  STUDENTS_READ: 'students:read',
+  STUDENTS_UPDATE: 'students:update',
+  STUDENTS_DELETE: 'students:delete',
+  ENROLLMENTS_CREATE: 'enrollments:create',
+  ENROLLMENTS_READ: 'enrollments:read',
+  ENROLLMENTS_UPDATE: 'enrollments:update',
+  ENROLLMENTS_DELETE: 'enrollments:delete',
+  ENROLLMENTS_READ_PDF: 'enrollments:read-pdf',
+  ENROLLMENTS_REGISTER_PAYMENT: 'enrollments:register-payment',
+  ENROLLMENTS_READ_FINANCIAL_PLANS: 'enrollments:read-financial-plans',
+} as const
