@@ -1,12 +1,12 @@
-import type { FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
-import { CreateSaleUseCase } from "@/use-cases/create-complete-sale-use-case";
-import { PrismaInvoicesRepository } from "@/repositories/prisma/prisma-invoices-repository";
-import { PrismaInvoiceItemsRepository } from "@/repositories/prisma/prisma-invoice-items-repository";
-import { PrismaPaymentsRepository } from "@/repositories/prisma/prisma-payments-repository";
-import { PrismaCashMovementsRepository } from "@/repositories/prisma/prisma-cash-movements-repository";
-import { PaymentMethod, SaleStatus } from "generated/prisma/enums";
-import { handleControllerError } from "@/http/controllers/handle-controller-error";
+import type { FastifyRequest, FastifyReply } from 'fastify'
+import { PaymentMethod, SaleStatus, UserRole } from 'generated/prisma/enums'
+import { z } from 'zod'
+import { handleControllerError } from '@/http/controllers/handle-controller-error'
+import { PrismaCashMovementsRepository } from '@/repositories/prisma/prisma-cash-movements-repository'
+import { PrismaInvoiceItemsRepository } from '@/repositories/prisma/prisma-invoice-items-repository'
+import { PrismaInvoicesRepository } from '@/repositories/prisma/prisma-invoices-repository'
+import { PrismaPaymentsRepository } from '@/repositories/prisma/prisma-payments-repository'
+import { CreateSaleUseCase } from '@/use-cases/create-complete-sale-use-case'
 
 const createSaleBodySchema = z.object({
   businessUnitId: z.string().uuid(),
@@ -29,26 +29,36 @@ const createSaleBodySchema = z.object({
   notes: z.string().trim().min(1).optional(),
   companyId: z.string().uuid(),
   cashRegisterId: z.string().uuid(),
-});
+})
 
 export async function createSaleController(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
   try {
-    const body = createSaleBodySchema.parse(request.body);
+    const body = createSaleBodySchema.parse(request.body)
+    const authUser = request.authUser
 
-    const invoicesRepository = new PrismaInvoicesRepository();
-    const invoiceItemsRepository = new PrismaInvoiceItemsRepository();
-    const paymentsRepository = new PrismaPaymentsRepository();
-    const cashMovementsRepository = new PrismaCashMovementsRepository();
+    if (
+      authUser?.role === UserRole.OPERATOR &&
+      body.status &&
+      body.status !== SaleStatus.COMPLETED
+    ) {
+      reply.status(403).send({ message: 'Forbidden.' })
+      return
+    }
+
+    const invoicesRepository = new PrismaInvoicesRepository()
+    const invoiceItemsRepository = new PrismaInvoiceItemsRepository()
+    const paymentsRepository = new PrismaPaymentsRepository()
+    const cashMovementsRepository = new PrismaCashMovementsRepository()
 
     const createSaleUseCase = new CreateSaleUseCase(
       invoicesRepository,
       invoiceItemsRepository,
       paymentsRepository,
       cashMovementsRepository,
-    );
+    )
 
     const result = await createSaleUseCase.execute({
       businessUnitId: body.businessUnitId,
@@ -61,16 +71,16 @@ export async function createSaleController(
       notes: body.notes,
       companyId: body.companyId,
       cashRegisterId: body.cashRegisterId,
-    });
+    })
 
     reply.status(201).send({
       sale: result.sale,
-    });
+    })
   } catch (error) {
     if (handleControllerError(reply, error)) {
-      return;
+      return
     }
 
-    throw error;
+    throw error
   }
 }

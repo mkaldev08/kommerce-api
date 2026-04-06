@@ -33,6 +33,7 @@ export async function authenticateUser(
 
     reply.setCookie('accessToken', accessToken, {
       httpOnly: true,
+      signed: true,
       secure: process.env.NODE_ENV === 'production', // Use secure: true in production
       sameSite: true,
       path: '/',

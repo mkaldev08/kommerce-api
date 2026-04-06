@@ -54,7 +54,6 @@ export function verifyRoutePermission(
     reply: FastifyReply,
   ) {
     const authUser = request.authUser
-
     if (!authUser) {
       return reply.status(401).send({ message: 'Unauthorized.' })
     }

@@ -6,9 +6,22 @@ import { fastify } from 'fastify'
 import { env } from './env'
 import { appRoutes, nonAuthenticatedRoutes } from './http/route'
 import { initializeFinancialPlansCronJob } from './lib/cron-jobs'
-import { verifyJWT } from './middlewares/verify-jwt'
 
-export const app = fastify()
+export const app = fastify({
+  logger: {
+    level: env.LOG_LEVEL,
+    transport:
+      env.NODE_ENV === 'development'
+        ? {
+            target: 'pino-pretty',
+            options: {
+              colorize: true,
+              translateTime: 'SYS:standard',
+            },
+          }
+        : undefined,
+  },
+})
 const API_VERSION = '/api/v1'
 
 app.register(cors, {
@@ -49,6 +62,7 @@ app.register(fastifyJwt, {
 })
 
 const FOUR_MB_IN_BYTES = 4 * 1024 * 1024
+
 app.register(fastifyMultipart, {
   attachFieldsToBody: false,
   limits: {
@@ -65,7 +79,6 @@ app.register(fastifyMultipart, {
 
 app.register(appRoutes, {
   prefix: API_VERSION,
-  preHandler: [verifyJWT],
 })
 app.register(nonAuthenticatedRoutes, { prefix: API_VERSION })
 

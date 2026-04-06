@@ -31,7 +31,7 @@ export const gamingRoutes: RouteDefinition[] = [
   defineRoute(
     'POST',
     '/business-units/:businessUnitId/gaming-house/consoles',
-    gamingRoute(GAMING.CREATE),
+    gamingRoute(GAMING.UPDATE),
   ),
   defineRoute(
     'PATCH',
@@ -51,7 +51,7 @@ export const gamingRoutes: RouteDefinition[] = [
   defineRoute(
     'POST',
     '/business-units/:businessUnitId/gaming-house/games',
-    gamingRoute(GAMING.CREATE),
+    gamingRoute(GAMING.UPDATE),
   ),
   defineRoute(
     'PATCH',
@@ -91,7 +91,7 @@ export const gamingRoutes: RouteDefinition[] = [
   defineRoute(
     'POST',
     '/business-units/:businessUnitId/gaming-house/expenses',
-    gamingRoute(GAMING.CREATE),
+    gamingRoute(GAMING.UPDATE),
   ),
   defineRoute(
     'GET',

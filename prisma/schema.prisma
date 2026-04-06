@@ -128,14 +128,14 @@ model Municipality {
 }
 
 model User {
-  id            String   @id @default(uuid())
-  username      String   @unique
+  id            String    @id @default(uuid())
+  username      String    @unique
   full_name     String
-  email         String   @unique
-  phone_number  String   @unique
+  email         String    @unique
+  phone_number  String    @unique
   password_hash String
-  is_active     Boolean  @default(true)
-  role          UserRole @default(ADMIN)
+  is_active     Boolean   @default(true)
+  role          UserRole? @default(ADMIN)
 
   business_unit_id String?
   business_unit    BusinessUnit? @relation("BusinessUnitUsers", fields: [business_unit_id], references: [id], onDelete: SetNull)

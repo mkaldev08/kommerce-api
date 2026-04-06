@@ -7,6 +7,7 @@ export async function logoutUser(
   reply.clearCookie('accessToken', {
     path: '/',
     httpOnly: true,
+    signed: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: true,
   })

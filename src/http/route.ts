@@ -4,6 +4,7 @@ import type {
   FastifyRequest,
   RouteShorthandOptions,
 } from 'fastify'
+import { verifyJWT } from '@/middlewares/verify-jwt'
 import { verifyAdmin, verifyRole } from '@/middlewares/verify-permission'
 import { authenticateUser } from './controllers/authenticate-controller'
 import { closeCashRegisterController } from './controllers/close-cash-register-controller'
@@ -84,6 +85,7 @@ import { RegisterEnrollmentPaymentController } from './controllers/register-enro
 import { registerUser } from './controllers/register-user-controller'
 import { StartGamingSessionController } from './controllers/start-gaming-session-controller'
 import { UpdateCompanyController } from './controllers/update-company-controller'
+import { updateCurrentUserPasswordController } from './controllers/update-current-user-password-controller'
 import { UpdateCustomerController } from './controllers/update-customer-controller'
 import { UpdateEnrollmentController } from './controllers/update-enrollment-controller'
 import { UpdateGamingConsoleController } from './controllers/update-gaming-console-controller'
@@ -96,6 +98,8 @@ import { uploadCompanyLogoController } from './controllers/upload-company-logo-c
 import { VerifyCompanyAccessPasscodeController } from './controllers/verify-company-access-passcode-controller'
 
 export function appRoutes(app: FastifyInstance) {
+  app.addHook('preHandler', verifyJWT)
+
   type UntypedHandler = (this: unknown, ...args: unknown[]) => unknown
 
   function withPermission(operation: string): RouteShorthandOptions
@@ -150,6 +154,7 @@ export function appRoutes(app: FastifyInstance) {
     '/auth/users',
     withPermission('auth:create-user', createManagedUserController),
   )
+  app.patch('/me/password', updateCurrentUserPasswordController)
 
   app.post('/companies/:ownerId', withAdmin(CreateCompany))
   app.get('/companies/:companyId', withAdmin(FindCompanyById))
@@ -518,6 +523,7 @@ export function nonAuthenticatedRoutes(app: FastifyInstance) {
   app.get('/health', async () => ({ status: 'ok' }))
   app.get('/updates/:platform/channel', getAppUpdateAssetController)
   app.get('/updates/:platform/:assetName', getAppUpdateAssetController)
+
   app.post('/users', registerUser)
   app.post('/sessions', authenticateUser)
 }

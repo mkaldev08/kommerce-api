@@ -3,7 +3,35 @@ import { prisma } from '@/lib/prisma'
 
 export async function verifyJWT(request: FastifyRequest, reply: FastifyReply) {
   try {
-    await request.jwtVerify()
+    let isAuthenticated = false
+
+    try {
+      await request.jwtVerify({ onlyCookie: true })
+      isAuthenticated = true
+    } catch {
+      const authorization = request.headers.authorization
+
+      if (authorization?.startsWith('Bearer ')) {
+        const token = authorization.slice('Bearer '.length).trim()
+
+        if (token) {
+          const payload = request.server.jwt.verify<{
+            sub?: string
+            role?: string
+            iat?: number
+            exp?: number
+          }>(token)
+
+          request.user = payload as typeof request.user
+          isAuthenticated = true
+        }
+      }
+    }
+
+    if (!isAuthenticated) {
+      reply.status(401).send({ message: 'Unauthorized.' })
+      return
+    }
 
     const userId = request.user.sub
 
