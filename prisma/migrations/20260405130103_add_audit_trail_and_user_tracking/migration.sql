@@ -56,14 +56,14 @@ CREATE TABLE "new_cash_movements" (
     "description" TEXT,
     "movement_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "cash_register_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     "deleted_at" DATETIME,
     CONSTRAINT "cash_movements_cash_register_id_fkey" FOREIGN KEY ("cash_register_id") REFERENCES "cash_registers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "cash_movements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "cash_movements_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
-INSERT INTO "new_cash_movements" ("amount", "cash_register_id", "created_at", "description", "id", "movement_date", "type") SELECT "amount", "cash_register_id", "created_at", "description", "id", "movement_date", "type" FROM "cash_movements";
+INSERT INTO "new_cash_movements" ("amount", "cash_register_id", "created_at", "description", "id", "movement_date", "type", "updated_at") SELECT "amount", "cash_register_id", "created_at", "description", "id", "movement_date", "type", CURRENT_TIMESTAMP FROM "cash_movements";
 DROP TABLE "cash_movements";
 ALTER TABLE "new_cash_movements" RENAME TO "cash_movements";
 CREATE INDEX "cash_movements_cash_register_id_idx" ON "cash_movements"("cash_register_id");
@@ -73,7 +73,7 @@ CREATE INDEX "cash_movements_movement_date_idx" ON "cash_movements"("movement_da
 CREATE TABLE "new_gaming_session_payments" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "session_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
     "amount" DECIMAL NOT NULL,
     "method" TEXT NOT NULL,
     "payment_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -81,7 +81,7 @@ CREATE TABLE "new_gaming_session_payments" (
     "updated_at" DATETIME NOT NULL,
     "deleted_at" DATETIME,
     CONSTRAINT "gaming_session_payments_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "gaming_sessions" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "gaming_session_payments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "gaming_session_payments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 INSERT INTO "new_gaming_session_payments" ("amount", "created_at", "id", "method", "payment_date", "session_id", "updated_at") SELECT "amount", "created_at", "id", "method", "payment_date", "session_id", "updated_at" FROM "gaming_session_payments";
 DROP TABLE "gaming_session_payments";
@@ -96,7 +96,7 @@ CREATE TABLE "new_gaming_sessions" (
     "customer_id" TEXT NOT NULL,
     "console_id" TEXT NOT NULL,
     "game_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
     "start_time" DATETIME NOT NULL,
     "end_time" DATETIME,
     "duration_minutes" INTEGER,
@@ -111,7 +111,7 @@ CREATE TABLE "new_gaming_sessions" (
     CONSTRAINT "gaming_sessions_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "gaming_customers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "gaming_sessions_console_id_fkey" FOREIGN KEY ("console_id") REFERENCES "gaming_consoles" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "gaming_sessions_game_id_fkey" FOREIGN KEY ("game_id") REFERENCES "gaming_games" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "gaming_sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "gaming_sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 INSERT INTO "new_gaming_sessions" ("business_unit_id", "console_id", "created_at", "customer_id", "duration_minutes", "end_time", "game_id", "hourly_rate", "id", "notes", "start_time", "status", "total_amount", "updated_at") SELECT "business_unit_id", "console_id", "created_at", "customer_id", "duration_minutes", "end_time", "game_id", "hourly_rate", "id", "notes", "start_time", "status", "total_amount", "updated_at" FROM "gaming_sessions";
 DROP TABLE "gaming_sessions";
@@ -139,7 +139,7 @@ CREATE TABLE "new_invoice_items" (
     CONSTRAINT "invoice_items_invoice_id_fkey" FOREIGN KEY ("invoice_id") REFERENCES "invoices" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "invoice_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
-INSERT INTO "new_invoice_items" ("id", "invoice_id", "product_id", "quantity", "subtotal", "unit_price", "vat_amount", "vat_rate", "vat_status") SELECT "id", "invoice_id", "product_id", "quantity", "subtotal", "unit_price", "vat_amount", "vat_rate", "vat_status" FROM "invoice_items";
+INSERT INTO "new_invoice_items" ("id", "invoice_id", "product_id", "quantity", "subtotal", "unit_price", "vat_amount", "vat_rate", "vat_status", "created_at", "updated_at") SELECT "id", "invoice_id", "product_id", "quantity", "subtotal", "unit_price", "vat_amount", "vat_rate", "vat_status", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP FROM "invoice_items";
 DROP TABLE "invoice_items";
 ALTER TABLE "new_invoice_items" RENAME TO "invoice_items";
 CREATE INDEX "invoice_items_invoice_id_idx" ON "invoice_items"("invoice_id");
@@ -161,7 +161,7 @@ CREATE TABLE "new_invoices" (
     "business_unit_id" TEXT NOT NULL,
     "customer_id" TEXT,
     "cash_register_id" TEXT NOT NULL,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     "deleted_at" DATETIME,
@@ -169,7 +169,7 @@ CREATE TABLE "new_invoices" (
     CONSTRAINT "invoices_business_unit_id_fkey" FOREIGN KEY ("business_unit_id") REFERENCES "business_units" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "invoices_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "invoices_cash_register_id_fkey" FOREIGN KEY ("cash_register_id") REFERENCES "cash_registers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "invoices_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "invoices_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 INSERT INTO "new_invoices" ("business_unit_id", "cancel_reason", "cash_register_id", "company_id", "created_at", "customer_id", "id", "issue_date", "number", "pending_reason", "series", "status", "taxable_amount", "total_amount", "type", "updated_at", "vat_amount") SELECT "business_unit_id", "cancel_reason", "cash_register_id", "company_id", "created_at", "customer_id", "id", "issue_date", "number", "pending_reason", "series", "status", "taxable_amount", "total_amount", "type", "updated_at", "vat_amount" FROM "invoices";
 DROP TABLE "invoices";
@@ -189,14 +189,14 @@ CREATE TABLE "new_payments" (
     "payment_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "invoice_id" TEXT NOT NULL,
     "financial_plan_id" TEXT,
-    "user_id" TEXT NOT NULL,
+    "user_id" TEXT,
     "payment_type" TEXT NOT NULL,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
     "deleted_at" DATETIME,
     CONSTRAINT "payments_invoice_id_fkey" FOREIGN KEY ("invoice_id") REFERENCES "invoices" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "payments_financial_plan_id_fkey" FOREIGN KEY ("financial_plan_id") REFERENCES "financial_plans" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "payments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "payments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 INSERT INTO "new_payments" ("amount", "created_at", "financial_plan_id", "id", "invoice_id", "method", "payment_date", "payment_type", "updated_at") SELECT "amount", "created_at", "financial_plan_id", "id", "invoice_id", "method", "payment_date", "payment_type", "updated_at" FROM "payments";
 DROP TABLE "payments";
