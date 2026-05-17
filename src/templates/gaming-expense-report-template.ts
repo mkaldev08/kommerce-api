@@ -1,7 +1,7 @@
 export function renderGamingExpenseReportTemplate(data: {
   expenses: Array<any>
 }): string {
-  // TODO: Replace 'any' with the correct type and add more professional layout
+  // FIXME: Replace 'any' with the correct type and add more professional layout
   const total = (data.expenses || []).reduce(
     (sum, e) => sum + (e.amount || 0),
     0,
