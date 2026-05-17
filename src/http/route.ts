@@ -96,6 +96,10 @@ import { updateSaleStatusController } from './controllers/update-sale-status-con
 import { UpdateStudentController } from './controllers/update-student-controller'
 import { uploadCompanyLogoController } from './controllers/upload-company-logo-controller'
 import { VerifyCompanyAccessPasscodeController } from './controllers/verify-company-access-passcode-controller'
+import { exportGamingDailyRevenuePdfController } from './controllers/export-gaming-daily-revenue-pdf-controller'
+import { exportGamingSessionReceiptPdfController } from './controllers/export-gaming-session-receipt-pdf-controller'
+import { exportGamingTournamentSummaryPdfController } from './controllers/export-gaming-tournament-summary-pdf-controller'
+import { exportGamingExpenseReportPdfController } from './controllers/export-gaming-expense-report-pdf-controller'
 
 export function appRoutes(app: FastifyInstance) {
   app.addHook('preHandler', verifyJWT)
@@ -516,6 +520,28 @@ export function appRoutes(app: FastifyInstance) {
   app.get(
     '/cash-movements',
     withPermission('cash-movements:read', listCashMovementsController),
+  )
+
+  // Gaming PDF export routes
+  app.get(
+    '/business-units/:businessUnitId/gaming-house/reports/revenue/pdf',
+    withPermission('gaming-house:reports:read-pdf'),
+    exportGamingDailyRevenuePdfController,
+  )
+  app.get(
+    '/gaming-house/sessions/:sessionId/report/pdf',
+    withPermission('gaming-house:reports:read-pdf'),
+    exportGamingSessionReceiptPdfController,
+  )
+  app.get(
+    '/business-units/:businessUnitId/gaming-house/tournaments/report/pdf',
+    withPermission('gaming-house:reports:read-pdf'),
+    exportGamingTournamentSummaryPdfController,
+  )
+  app.get(
+    '/business-units/:businessUnitId/gaming-house/expenses/report/pdf',
+    withPermission('gaming-house:reports:read-pdf'),
+    exportGamingExpenseReportPdfController,
   )
 }
 
