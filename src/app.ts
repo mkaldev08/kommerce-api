@@ -10,16 +10,6 @@ import { initializeFinancialPlansCronJob } from './lib/cron-jobs'
 export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
-    transport:
-      env.NODE_ENV === 'dev'
-        ? {
-            target: 'pino-pretty',
-            options: {
-              colorize: true,
-              translateTime: 'SYS:standard',
-            },
-          }
-        : undefined,
   },
 })
 const API_VERSION = '/api/v1'
