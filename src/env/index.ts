@@ -18,6 +18,7 @@ const envSchema = z.object({
   GITHUB_RELEASES_TOKEN: z.string().optional(),
   GITHUB_RELEASES_OWNER: z.string().default('mkaldev08'),
   GITHUB_RELEASES_REPO: z.string().default('kommerce-app'),
+  CORS_ORIGIN: z.string().optional(),
 })
 
 const _env = envSchema.safeParse(process.env)
