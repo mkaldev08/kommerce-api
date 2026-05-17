@@ -69,3 +69,16 @@ app
     });
     process.exit(1);
   });
+
+const shutdown = (signal: string) => {
+  console.log(`Received ${signal}, shutting down gracefully.`);
+  app.close().then(() => {
+    process.exit(0);
+  }).catch((error) => {
+    console.error("Error during shutdown:", error);
+    process.exit(1);
+  });
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

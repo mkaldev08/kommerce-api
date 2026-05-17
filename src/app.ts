@@ -11,7 +11,7 @@ export const app = fastify({
   logger: {
     level: env.LOG_LEVEL,
     transport:
-      env.NODE_ENV === 'development'
+      env.NODE_ENV === 'dev'
         ? {
             target: 'pino-pretty',
             options: {
@@ -24,11 +24,16 @@ export const app = fastify({
 })
 const API_VERSION = '/api/v1'
 
+const extraOrigins = env.CORS_ORIGIN
+  ? env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  : []
+
 app.register(cors, {
   origin: (origin, callback) => {
     const allowedOrigins = new Set([
       'http://localhost:5173',
       'http://127.0.0.1:5173',
+      ...extraOrigins,
     ])
     const normalizedOrigin = (origin ?? '').replace(/\/$/, '')
     const isElectronOrigin =
