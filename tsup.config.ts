@@ -15,6 +15,10 @@ export default defineConfig([
     target: "es2023",
     platform: "node",
     shims: true,
+    esbuildOptions(options) {
+      options.banner = options.banner ?? {};
+      options.banner.js = `${options.banner.js ?? ""}\nimport { createRequire } from "module";\nconst require = createRequire(import.meta.url);`;
+    },
   },
   {
     entry: {
