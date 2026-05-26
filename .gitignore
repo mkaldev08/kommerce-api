@@ -8,3 +8,5 @@ db/logs/*
 # generated build/runtime artifacts
 build
 /generated/prisma
+
+.DS_Store
