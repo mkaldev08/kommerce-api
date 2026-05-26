@@ -15,6 +15,7 @@ export default defineConfig([
     target: "es2023",
     platform: "node",
     noExternal: [/.*/],
+    external: ["sharp", "puppeteer", "puppeteer-core"],
     shims: true,
     esbuildOptions(options) {
       options.banner = options.banner ?? {};
