@@ -10,7 +10,7 @@ export async function CreateCompany(
 ) {
   const createCompanyBodySchema = z.object({
     trade_name: z.string(),
-    commercial_registry: z.string().trim().min(9),
+    commercial_registry: z.string().trim().min(8),
     document_code_prefix: z.string().trim().min(2).optional(),
     document_code: z.string().trim().min(2).optional(),
     nif: z.string().trim().min(9),
