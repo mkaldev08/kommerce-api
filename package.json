@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
     "start": "node build/server.js",
-    "build": "tsup --config tsup.config.ts && prisma generate",
+    "build": "prisma generate && tsup --config tsup.config.ts",
     "build:win": "tsup --config tsup.config.ts && prisma generate && node scripts/prepare-runtime-deps.cjs && node -e \"const fs=require('fs');fs.writeFileSync('build/package.json', JSON.stringify({type:'module'}, null, 2));\"",
     "db:migrate:status": "pnpm exec prisma migrate status --schema prisma/schema.prisma",
     "db:migrate:deploy": "pnpm exec prisma migrate deploy --schema prisma/schema.prisma",
