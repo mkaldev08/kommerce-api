@@ -14,13 +14,7 @@ export default defineConfig([
     clean: true,
     target: "es2023",
     platform: "node",
-    noExternal: [/.*/],
-    external: ["sharp", "puppeteer", "puppeteer-core"],
     shims: true,
-    esbuildOptions(options) {
-      options.banner = options.banner ?? {};
-      options.banner.js = `${options.banner.js ?? ""}\nimport { createRequire } from \"module\";\nconst require = createRequire(import.meta.url);`;
-    },
   },
   {
     entry: {
